@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Canvas, FabricImage, IText, FabricObject } from "fabric";
+import { Canvas, FabricImage, FabricObject, IText } from "fabric";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
@@ -7,7 +7,7 @@ import { Clipboard, Copy, Trash } from "lucide-react";
 
 const Banner = () => {
   const [fabCanvas, setFabCanvas] = useState<Canvas | null>(null);
-  const [_clipboard, setClipboard] = useState<FabricObject | null>(null)
+  const [clipboard, setClipboard] = useState<FabricObject | null>(null)
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fabCanvas) return;
@@ -114,6 +114,7 @@ const Banner = () => {
     }
   };
 
+  
   const copy = () => {
     if (!fabCanvas) return;
 
@@ -125,12 +126,26 @@ const Banner = () => {
       })
     }
   };
-  }
+  
 
-  const paste = async () => {
-    const clonedObj = await _clipboard.clone();
-    
+ const pasteObject = async () => {
+  if (!fabCanvas || !clipboard) return;
+
+  try {
+    const clonedObj = await clipboard.clone();
+    clonedObj.set({
+      left: clonedObj.left! + 10, // Offset to avoid overlapping
+      top: clonedObj.top! + 10,
+      selectable: true,
+    });
+
+    fabCanvas.add(clonedObj);
+    fabCanvas.setActiveObject(clonedObj);
+    fabCanvas.renderAll();
+  } catch (error) {
+    console.error('Paste failed:', error);
   }
+}
 
   const deleteObject = () => {
     if (!fabCanvas) return;
