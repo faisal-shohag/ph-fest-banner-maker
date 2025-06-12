@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Canvas, FabricImage, IText } from "fabric";
+import { Canvas, FabricImage, IText, FabricObject } from "fabric";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
@@ -7,6 +7,7 @@ import { Clipboard, Copy, Trash } from "lucide-react";
 
 const Banner = () => {
   const [fabCanvas, setFabCanvas] = useState<Canvas | null>(null);
+  const [_clipboard, setClipboard] = useState<FabricObject | null>(null)
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fabCanvas) return;
@@ -112,6 +113,24 @@ const Banner = () => {
       }
     }
   };
+
+  const copy = () => {
+    if (!fabCanvas) return;
+
+    const activeObject = fabCanvas.getActiveObject();
+    if (activeObject) {
+      activeObject.clone()
+      .then((cloned) => {
+        setClipboard(cloned)
+      })
+    }
+  };
+  }
+
+  const paste = async () => {
+    const clonedObj = await _clipboard.clone();
+    
+  }
 
   const deleteObject = () => {
     if (!fabCanvas) return;
