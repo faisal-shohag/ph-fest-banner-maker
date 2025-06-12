@@ -1,13 +1,76 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Canvas, FabricImage, IText, FabricObject } from "fabric";
+import {
+  ActiveSelection,
+  Canvas,
+  FabricImage,
+  FabricObject,
+  IText,
+  Point,
+} from "fabric";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { Clipboard, Copy, Trash } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { IoDuplicateOutline } from "react-icons/io5";
+import {
+  Clipboard,
+  Copy,
+  Italic,
+  Strikethrough,
+  Trash2,
+  Underline,
+} from "lucide-react";
+import { ImBold } from "react-icons/im";
+import { BiSolidWidget } from "react-icons/bi";
+import { IoIosImages } from "react-icons/io";
+import { FaShapes } from "react-icons/fa";
 
 const Banner = () => {
   const [fabCanvas, setFabCanvas] = useState<Canvas | null>(null);
-  const [_clipboard, setClipboard] = useState<FabricObject | null>(null)
+  const [clipboard, setClipboard] = useState<FabricObject | null>(null);
+  const [openTextOptions, setOpenTextOption] = useState(false);
+
+  useEffect(() => {
+    if (!fabCanvas) return;
+
+    const text = new IText("Hello World", {
+      left: 100,
+      top: 100,
+      fill: "#eeee",
+      fontSize: 20,
+      selectable: true,
+    });
+
+    fabCanvas.add(text);
+    fabCanvas.renderAll();
+
+    // Cleanup
+    return () => {
+      fabCanvas?.dispose();
+    };
+  }, [fabCanvas]);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fabCanvas) return;
@@ -21,7 +84,6 @@ const Banner = () => {
       const imageUrl = reader.result as string;
       FabricImage.fromURL(imageUrl)
         .then((img: FabricImage) => {
-          console.log(img);
           img.scaleToWidth(200);
           img.set({
             left: 100,
@@ -79,7 +141,11 @@ const Banner = () => {
     fabCanvas.renderAll();
   };
 
-  const textBold = () => {
+  const textOptionsApply = (
+    option: string,
+    fontFamily?: string,
+    fontColor?: string
+  ) => {
     if (!fabCanvas) return;
 
     const activeObject = fabCanvas.getActiveObject();
@@ -88,49 +154,170 @@ const Banner = () => {
 
       // Get the current selection range
       const selectionStart = iText.selectionStart || 0;
-      const selectionEnd = iText.selectionEnd || 0;
-
-      if (selectionStart !== selectionEnd) {
-        // Check if the selected text is already bold
-        const currentStyles = iText.getSelectionStyles(
-          selectionStart,
-          selectionEnd
-        );
-        const isBold = currentStyles.every(
-          (style) => style.fontWeight === "bold"
-        );
-
-        // Apply or remove bold style to the selected range
-        iText.setSelectionStyles(
-          {
-            fontWeight: isBold ? "normal" : "bold",
-          },
-          selectionStart,
-          selectionEnd
-        );
-
-        fabCanvas.renderAll();
+      let selectionEnd = iText.selectionEnd || 0;
+      if (selectionStart === 0 && selectionEnd === 0) {
+        selectionEnd = iText.text.length;
       }
+
+      const currentStyles = iText.getSelectionStyles(
+        selectionStart,
+        selectionEnd
+      );
+
+      switch (option) {
+        case "bold":
+          iText.setSelectionStyles(
+            {
+              fontWeight: currentStyles.every(
+                (style) => style.fontWeight === "bold"
+              )
+                ? "normal"
+                : "bold",
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "italic":
+          iText.setSelectionStyles(
+            {
+              fontStyle: currentStyles.every(
+                (style) => style.fontStyle === "italic"
+              )
+                ? "normal"
+                : "italic",
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "underline":
+          iText.setSelectionStyles(
+            {
+              underline: currentStyles.every(
+                (style) => style.underline === true
+              )
+                ? false
+                : true,
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "strike":
+          iText.setSelectionStyles(
+            {
+              linethrough: currentStyles.every(
+                (style) => style.linethrough === true
+              )
+                ? false
+                : true,
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "fontColor":
+          if (fontColor) {
+            iText.setSelectionStyles(
+              { fill: fontColor },
+              selectionStart,
+              selectionEnd
+            );
+          }
+          break;
+        case "fontFamily":
+          iText.setSelectionStyles(
+            { fontFamily },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+      }
+
+      fabCanvas.renderAll();
     }
   };
-
   const copy = () => {
     if (!fabCanvas) return;
 
     const activeObject = fabCanvas.getActiveObject();
     if (activeObject) {
-      activeObject.clone()
-      .then((cloned) => {
-        setClipboard(cloned)
-      })
+      activeObject.clone().then((cloned) => {
+        setClipboard(cloned);
+      });
     }
   };
-  
 
   const paste = async () => {
-    const clonedObj = await _clipboard.clone();
-    
-  }
+    if (!fabCanvas || !clipboard) return;
+
+    try {
+      const clonedObj = await clipboard.clone();
+      fabCanvas.discardActiveObject();
+      clonedObj.set({
+        left: clonedObj.left! + 10, // Offset to avoid overlapping
+        top: clonedObj.top! + 10,
+        selectable: true,
+      });
+
+      if (clonedObj instanceof ActiveSelection) {
+        clonedObj.canvas = fabCanvas;
+        clonedObj.forEachObject((obj) => {
+          fabCanvas.add(obj);
+        });
+        clonedObj.setCoords();
+      } else {
+        fabCanvas.add(clonedObj);
+      }
+
+      clipboard.top += 10;
+      clipboard.left += 10;
+      fabCanvas.setActiveObject(clonedObj);
+      fabCanvas.requestRenderAll();
+    } catch (error) {
+      console.error("Paste failed:", error);
+    }
+  };
+
+  const duplicate = async () => {
+    if (!fabCanvas) return;
+
+    const activeObject = fabCanvas.getActiveObject();
+    if (activeObject) {
+      const clonedObj = await activeObject.clone();
+      clonedObj.set({
+        left: clonedObj.left! + 10, // Offset to avoid overlapping
+        top: clonedObj.top! + 10,
+        selectable: true,
+      });
+
+      if (clonedObj instanceof ActiveSelection) {
+        clonedObj.canvas = fabCanvas;
+        clonedObj.forEachObject((obj) => {
+          fabCanvas.add(obj);
+        });
+        clonedObj.setCoords();
+      } else {
+        fabCanvas.add(clonedObj);
+      }
+
+      fabCanvas.setActiveObject(clonedObj);
+      fabCanvas.requestRenderAll();
+    }
+  };
+
+  fabCanvas?.on("mouse:down", (options) => {
+    const target = options.target;
+    //  if(!target) {
+
+    //  }
+    if (target && target.type === "i-text") {
+      if (!openTextOptions) setOpenTextOption(true);
+    } else {
+      if (openTextOptions) setOpenTextOption(false);
+    }
+  });
 
   const deleteObject = () => {
     if (!fabCanvas) return;
@@ -162,13 +349,134 @@ const Banner = () => {
     }
   };
 
+  const fontFamily = [
+    {
+      title: "Lora",
+      family: '"Lora", serif',
+    },
+    {
+      title: "Roboto",
+      family: '"Roboto", sans-serif',
+    },
+    {
+      title: "Inter",
+      family: '"Inter", sans-serif',
+    },
+  ];
+
+  fabCanvas?.on("mouse:wheel", (opt) => {
+    if (!fabCanvas) return;
+
+    const delta = opt.e.deltaY;
+    const ctrlKey = opt.e.ctrlKey;
+
+    if (ctrlKey) {
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+
+      // Get the pointer position relative to the canvas
+      const pointer = fabCanvas.getPointer(opt.e);
+
+      console.log(pointer);
+
+      // Current zoom level
+      let zoom = fabCanvas.getZoom();
+
+      // Calculate zoom factor (positive delta = zoom out, negative = zoom in)
+      const zoomFactor = delta > 0 ? 0.9 : 1.1;
+      zoom *= zoomFactor;
+
+      // Apply zoom limits
+      if (zoom > 20) zoom = 20; // Max zoom
+      if (zoom < 0.1) zoom = 0.1; // Min zoom
+
+      // Zoom to the mouse pointer position instead of canvas center
+      fabCanvas.zoomToPoint(new Point(pointer.x, pointer.y), zoom);
+      fabCanvas.renderAll();
+    }
+  });
+
   return (
     <div>
+
+      <SideBar/>
       <input type="file" accept="image/*" onChange={handleImageUpload} />
       <Input type="url" onChange={handleImageFromURL} placeholder="Image URL" />
       <button onClick={handleAddText}>Add Text</button>
-      <button onClick={textBold}>Bold</button>
-      <FabCanvas deleteObject={deleteObject} bringFront={bringFront} sendBack={sendBack} height={500} width={500} setFabCanvas={setFabCanvas} />
+      <dialog
+        className="z-50 bg-transparent animate__animated animate__fadeInDown animate__faster  dark:text-white p-3 w-full rounded-xl top-0"
+        open={openTextOptions}
+      >
+        <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
+          <Select
+            onValueChange={(value) => textOptionsApply("fontFamily", value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Font Family" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Font Family</SelectLabel>
+                {fontFamily.map((font, index) => (
+                  <SelectItem
+                    style={{ fontFamily: font.family }}
+                    key={index + 122334}
+                    value={font.family}
+                  >
+                    {font.title}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("bold")}
+          >
+            <ImBold />
+          </Button>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("italic")}
+          >
+            <Italic />
+          </Button>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("underline")}
+          >
+            <Underline />
+          </Button>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("strike")}
+          >
+            <Strikethrough />
+          </Button>
+          <Input
+            onChange={(e) => {
+              textOptionsApply("fontColor", "", e.target.value);
+            }}
+            className="rounded-lg w-20"
+            type="color"
+            defaultValue={"#000"}
+          />
+        </div>
+      </dialog>
+      <FabCanvas
+        duplicate={duplicate}
+        copy={copy}
+        paste={paste}
+        deleteObject={deleteObject}
+        bringFront={bringFront}
+        sendBack={sendBack}
+        setFabCanvas={setFabCanvas}
+      />
     </div>
   );
 };
@@ -181,16 +489,24 @@ type FabCanvasProps = {
   bringFront?: () => void;
   sendBack?: () => void;
   deleteObject?: () => void;
+  copy?: () => void;
+  paste?: () => void;
+  duplicate?: () => void;
+  handleObjectClick?: () => void;
 };
 
 const FabCanvas = ({
-  width = 600,
+  width = 800,
   height = 600,
-  bgColor = "#ffff",
+  bgColor = "#2222",
   setFabCanvas,
   bringFront,
   sendBack,
-  deleteObject
+  deleteObject,
+  copy,
+  paste,
+  duplicate,
+  handleObjectClick,
 }: FabCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -212,45 +528,72 @@ const FabCanvas = ({
   }, [width, height, bgColor, setFabCanvas]);
 
   return (
-    <div className="border">
+    <div className="w-full flex justify-center">
       <ContextMenu>
         <ContextMenuTrigger>
-          <canvas ref={canvasRef} width={width} height={height} />
+          <canvas
+            className=" mx-auto"
+            onClick={handleObjectClick}
+            ref={canvasRef}
+            width={width}
+            height={height}
+          />
         </ContextMenuTrigger>
 
-         <ContextMenuContent className="w-60">
-        <ContextMenuItem>
-            <Copy/> Copy 
-             <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
-        </ContextMenuItem>
-         <ContextMenuItem>
-            <Clipboard/> Paste 
-             <ContextMenuShortcut>Ctrl+V</ContextMenuShortcut>
-        </ContextMenuItem>
+        <ContextMenuContent className="w-60">
+          <ContextMenuItem onClick={copy}>
+            <Copy /> Copy
+            <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={paste}>
+            <Clipboard /> Paste
+            <ContextMenuShortcut>Ctrl+V</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={duplicate}>
+            <IoDuplicateOutline /> Duplicate
+            <ContextMenuShortcut>Ctrl+D</ContextMenuShortcut>
+          </ContextMenuItem>
 
           <ContextMenuItem onClick={deleteObject}>
-            <Trash/> Delete 
-             <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
-        </ContextMenuItem>
-         <ContextMenuSeparator />
-        <ContextMenuItem onClick={bringFront}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <path fill="currentColor" d="M12.75 5.82v8.43a.75.75 0 1 1-1.5 0V5.81L8.99 8.07A.75.75 0 1 1 7.93 7l2.83-2.83a1.75 1.75 0 0 1 2.47 0L16.06 7A.75.75 0 0 1 15 8.07l-2.25-2.25M15 10.48l6.18 3.04a1 1 0 0 1 0 1.79l-7.86 3.86a3 3 0 0 1-2.64 0l-7.86-3.86a1 1 0 0 1 0-1.79L9 10.48v1.67L4.4 14.41l6.94 3.42c.42.2.9.2 1.32 0l6.94-3.42-4.6-2.26v-1.67z"></path>
-</svg> Bring Front
-          <ContextMenuShortcut>Ctrl+Shift+F</ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={sendBack}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <path fill="currentColor" d="M 12.75 18.12 V 9.75 a 0.75 0.75 0 1 0 -1.5 0 v 8.37 l -2.26 -2.25 a 0.75 0.75 0 0 0 -1.06 1.06 l 2.83 2.82 c 0.68 0.69 1.79 0.69 2.47 0 l 2.83 -2.82 A 0.75 0.75 0 0 0 15 15.87 l -2.25 2.25 Z M 15 11.85 v 1.67 l 6.18 -3.04 a 1 1 0 0 0 0 -1.79 l -7.86 -3.86 a 3 3 0 0 0 -2.64 0 L 2.82 8.69 a 1 1 0 0 0 0 1.8 L 9 13.51 v -1.67 L 4.4 9.6 l 6.94 -3.42 c 0.42 -0.2 0.9 -0.2 1.32 0 L 19.6 9.6 L 15 11.85 Z"></path>
-</svg> Send Back
-          <ContextMenuShortcut>Ctrl+Shift+B</ContextMenuShortcut>
-        </ContextMenuItem>
-        
-        {/* <ContextMenuItem inset>
+            <Trash2 /> Delete
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={bringFront}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M12.75 5.82v8.43a.75.75 0 1 1-1.5 0V5.81L8.99 8.07A.75.75 0 1 1 7.93 7l2.83-2.83a1.75 1.75 0 0 1 2.47 0L16.06 7A.75.75 0 0 1 15 8.07l-2.25-2.25M15 10.48l6.18 3.04a1 1 0 0 1 0 1.79l-7.86 3.86a3 3 0 0 1-2.64 0l-7.86-3.86a1 1 0 0 1 0-1.79L9 10.48v1.67L4.4 14.41l6.94 3.42c.42.2.9.2 1.32 0l6.94-3.42-4.6-2.26v-1.67z"
+              ></path>
+            </svg>{" "}
+            Bring Front
+            <ContextMenuShortcut>Ctrl+Shift+F</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={sendBack}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M 12.75 18.12 V 9.75 a 0.75 0.75 0 1 0 -1.5 0 v 8.37 l -2.26 -2.25 a 0.75 0.75 0 0 0 -1.06 1.06 l 2.83 2.82 c 0.68 0.69 1.79 0.69 2.47 0 l 2.83 -2.82 A 0.75 0.75 0 0 0 15 15.87 l -2.25 2.25 Z M 15 11.85 v 1.67 l 6.18 -3.04 a 1 1 0 0 0 0 -1.79 l -7.86 -3.86 a 3 3 0 0 0 -2.64 0 L 2.82 8.69 a 1 1 0 0 0 0 1.8 L 9 13.51 v -1.67 L 4.4 9.6 l 6.94 -3.42 c 0.42 -0.2 0.9 -0.2 1.32 0 L 19.6 9.6 L 15 11.85 Z"
+              ></path>
+            </svg>{" "}
+            Send Back
+            <ContextMenuShortcut>Ctrl+Shift+B</ContextMenuShortcut>
+          </ContextMenuItem>
+
+          {/* <ContextMenuItem inset>
           Reload
           <ContextMenuShortcut>⌘R</ContextMenuShortcut>
         </ContextMenuItem> */}
-        {/* <ContextMenuSub>
+          {/* <ContextMenuSub>
           <ContextMenuSubTrigger inset>More Tools</ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-44">
             <ContextMenuItem>Save Page...</ContextMenuItem>
@@ -262,25 +605,47 @@ const FabCanvas = ({
             <ContextMenuItem variant="destructive">Delete</ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub> */}
-        {/* <ContextMenuSeparator />
+          {/* <ContextMenuSeparator />
         <ContextMenuCheckboxItem>
           Show Bookmarks
         </ContextMenuCheckboxItem>
         <ContextMenuCheckboxItem>Show Full URLs</ContextMenuCheckboxItem>
         <ContextMenuSeparator /> */}
-        {/* <ContextMenuRadioGroup value="pedro">
+          {/* <ContextMenuRadioGroup value="pedro">
           <ContextMenuLabel inset>People</ContextMenuLabel>
           <ContextMenuRadioItem value="pedro">
             Pedro Duarte
           </ContextMenuRadioItem>
           <ContextMenuRadioItem value="colm">Colm Tuite</ContextMenuRadioItem>
         </ContextMenuRadioGroup> */}
-      </ContextMenuContent>
-
+        </ContextMenuContent>
       </ContextMenu>
     </div>
   );
 };
+
+const SideBar = () => {
+  return <div className=" fixed h-lvh flex items-center">
+     <div className="z-50 left-0 top-0 dark:bg-zinc-900 shadow-2xl rounded-full py-5 px-3 flex flex-col gap-5">
+      <div className="flex flex-col items-center gap-1">
+        <div><BiSolidWidget size={20} /></div>
+        <div className="text-xs font-bold">Design</div>
+      </div>
+
+       <div className="flex flex-col items-center gap-1">
+        <div><FaShapes size={20}/></div>
+        <div className="text-xs font-bold">Shapes</div>
+      </div>
+
+      <div className="flex flex-col items-center gap-1">
+        <div><IoIosImages size={20}/></div>
+        <div className="text-xs font-bold">Images</div>
+      </div>
+
+     
+     </div>
+  </div>
+}
 
 
 
