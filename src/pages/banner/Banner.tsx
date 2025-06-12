@@ -125,7 +125,7 @@ const Banner = () => {
       })
     }
   };
-  }
+  
 
   const paste = async () => {
     const clonedObj = await _clipboard.clone();
