@@ -23,12 +23,23 @@ import {
   ContextMenuSubTrigger,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { IoDuplicateOutline } from "react-icons/io5";
-import { Clipboard, Copy, Trash2 } from "lucide-react";
+import { Clipboard, Copy, Italic, Strikethrough, Trash2, Underline } from "lucide-react";
+import { ImBold } from "react-icons/im";
 
 const Banner = () => {
   const [fabCanvas, setFabCanvas] = useState<Canvas | null>(null);
   const [clipboard, setClipboard] = useState<FabricObject | null>(null);
+  const [openTextOptions, setOpenTextOption] = useState(false)
 
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -100,41 +111,79 @@ const Banner = () => {
     fabCanvas.renderAll();
   };
 
-  const textBold = () => {
-    if (!fabCanvas) return;
+ const textOptionsApply = (option: string) => {
+  if (!fabCanvas) return;
 
-    const activeObject = fabCanvas.getActiveObject();
-    if (activeObject && activeObject.type === "i-text") {
-      const iText = activeObject as IText;
+  const activeObject = fabCanvas.getActiveObject();
+  if (activeObject && activeObject.type === 'i-text') {
+    const iText = activeObject as IText;
 
-      // Get the current selection range
-      const selectionStart = iText.selectionStart || 0;
-      const selectionEnd = iText.selectionEnd || 0;
-
-      if (selectionStart !== selectionEnd) {
-        // Check if the selected text is already bold
-        const currentStyles = iText.getSelectionStyles(
-          selectionStart,
-          selectionEnd
-        );
-        const isBold = currentStyles.every(
-          (style) => style.fontWeight === "bold"
-        );
-
-        // Apply or remove bold style to the selected range
-        iText.setSelectionStyles(
-          {
-            fontWeight: isBold ? "normal" : "bold",
-          },
-          selectionStart,
-          selectionEnd
-        );
-
-        fabCanvas.renderAll();
-      }
+    // Get the current selection range
+    const selectionStart = iText.selectionStart || 0;
+    let selectionEnd = iText.selectionEnd || 0;
+    if (selectionStart === 0 && selectionEnd === 0) {
+      selectionEnd = iText.text.length;
     }
-  };
 
+    const currentStyles = iText.getSelectionStyles(selectionStart, selectionEnd);
+
+    switch (option) {
+      case 'bold':
+
+        iText.setSelectionStyles(
+          { fontWeight: currentStyles.every((style) => style.fontWeight === 'bold') ? 'normal' : 'bold' },
+          selectionStart,
+          selectionEnd
+        );
+        break;
+      case 'italic':
+        iText.setSelectionStyles(
+          { fontStyle: currentStyles.every((style) => style.fontStyle === 'italic') ? 'normal' : 'italic' },
+          selectionStart,
+          selectionEnd
+        );
+        break;
+      case 'underline':
+        iText.setSelectionStyles(
+          { underline: currentStyles.every((style) => style.underline === true) ? false : true },
+          selectionStart,
+          selectionEnd
+        );
+        break;
+      case 'strike':
+        
+        iText.setSelectionStyles(
+          { linethrough:  currentStyles.every((style) => style.linethrough === true) ? false : true },
+          selectionStart,
+          selectionEnd
+        );
+        break;
+      // case 'fontSize':
+      //   const newFontSize = prompt('Enter font size (e.g., 12, 16, 20):', '16');
+      //   if (newFontSize) {
+      //     const size = parseInt(newFontSize, 10);
+      //     if (!isNaN(size) && size > 0) {
+      //       iText.setSelectionStyles({ fontSize: size }, selectionStart, selectionEnd);
+      //     }
+      //   }
+      //   break;
+      // case 'fontColor':
+      //   const newColor = prompt('Enter color (e.g., #ff0000, red):', '#000000');
+      //   if (newColor) {
+      //     iText.setSelectionStyles({ fill: newColor }, selectionStart, selectionEnd);
+      //   }
+      //   break;
+      // case 'fontFamily':
+      //   const newFontFamily = prompt('Enter font family (e.g., Arial, Times New Roman):', 'Arial');
+      //   if (newFontFamily) {
+      //     iText.setSelectionStyles({ fontFamily: newFontFamily }, selectionStart, selectionEnd);
+      //   }
+      //   break;
+    }
+
+    fabCanvas.renderAll();
+  }
+};
   const copy = () => {
     if (!fabCanvas) return;
 
@@ -207,9 +256,9 @@ const Banner = () => {
  fabCanvas?.on('mouse:down', (options) => {
   const target = options.target;
   if (target && target.type === 'i-text') {
-    console.log("show menu")
+    if(!openTextOptions) setOpenTextOption(true)
   } else{
-  console.log("hide menu")
+    if(openTextOptions) setOpenTextOption(false)
   }
 });
 
@@ -243,12 +292,40 @@ const Banner = () => {
     }
   };
 
+
   return (
     <div>
       <input type="file" accept="image/*" onChange={handleImageUpload} />
       <Input type="url" onChange={handleImageFromURL} placeholder="Image URL" />
       <button onClick={handleAddText}>Add Text</button>
-      <button onClick={textBold}>Bold</button>
+      <dialog className="z-50 bg-transparent  dark:text-white p-3 w-full rounded-xl top-0" open={openTextOptions}>
+      <div className="dark:bg-zinc-800 rounded-xl px-5 py-2 flex gap-2">
+
+      <Select>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Font Family" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
+          <SelectLabel>Fruits</SelectLabel>
+          <SelectItem value="apple">Apple</SelectItem>
+          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="blueberry">Blueberry</SelectItem>
+          <SelectItem value="grapes">Grapes</SelectItem>
+          <SelectItem value="pineapple">Pineapple</SelectItem>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
+
+      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('bold')}><ImBold/></Button>
+      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('italic')}><Italic/></Button>
+      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('underline')}><Underline/></Button>
+      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('strike')}><Strikethrough/></Button>
+      {/* <button onClick={() => textOptionsApply('fontSize')}>Font Size</button>
+      <button onClick={() => textOptionsApply('fontColor')}>Font Color</button>
+      <button onClick={() => textOptionsApply('fontFamily')}>Font Family</button> */}
+        </div>
+      </dialog>
       <FabCanvas
         duplicate={duplicate}
         copy={copy}
