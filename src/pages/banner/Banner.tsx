@@ -111,7 +111,7 @@ const Banner = () => {
     fabCanvas.renderAll();
   };
 
- const textOptionsApply = (option: string) => {
+ const textOptionsApply = (option: string, fontFamily?:string, fontColor?:string) => {
   if (!fabCanvas) return;
 
   const activeObject = fabCanvas.getActiveObject();
@@ -151,34 +151,20 @@ const Banner = () => {
         );
         break;
       case 'strike':
-        
         iText.setSelectionStyles(
           { linethrough:  currentStyles.every((style) => style.linethrough === true) ? false : true },
           selectionStart,
           selectionEnd
         );
         break;
-      // case 'fontSize':
-      //   const newFontSize = prompt('Enter font size (e.g., 12, 16, 20):', '16');
-      //   if (newFontSize) {
-      //     const size = parseInt(newFontSize, 10);
-      //     if (!isNaN(size) && size > 0) {
-      //       iText.setSelectionStyles({ fontSize: size }, selectionStart, selectionEnd);
-      //     }
-      //   }
-      //   break;
-      // case 'fontColor':
-      //   const newColor = prompt('Enter color (e.g., #ff0000, red):', '#000000');
-      //   if (newColor) {
-      //     iText.setSelectionStyles({ fill: newColor }, selectionStart, selectionEnd);
-      //   }
-      //   break;
-      // case 'fontFamily':
-      //   const newFontFamily = prompt('Enter font family (e.g., Arial, Times New Roman):', 'Arial');
-      //   if (newFontFamily) {
-      //     iText.setSelectionStyles({ fontFamily: newFontFamily }, selectionStart, selectionEnd);
-      //   }
-      //   break;
+      case 'fontColor':
+        if (fontColor) {
+          iText.setSelectionStyles({ fill: fontColor }, selectionStart, selectionEnd);
+        }
+        break;
+      case 'fontFamily':
+          iText.setSelectionStyles({fontFamily}, selectionStart, selectionEnd);
+        break;
     }
 
     fabCanvas.renderAll();
@@ -292,27 +278,43 @@ const Banner = () => {
     }
   };
 
+  const fontFamily = [
+ {
+  title: 'Lora',
+  family: '"Lora", serif'
+ },
+ {
+  title: 'Roboto',
+  family: '"Roboto", sans-serif'
+ },
+ {
+  title: 'Inter',
+  family: '"Inter", sans-serif'
+ },
+  ]
+
 
   return (
     <div>
       <input type="file" accept="image/*" onChange={handleImageUpload} />
       <Input type="url" onChange={handleImageFromURL} placeholder="Image URL" />
       <button onClick={handleAddText}>Add Text</button>
-      <dialog className="z-50 bg-transparent  dark:text-white p-3 w-full rounded-xl top-0" open={openTextOptions}>
-      <div className="dark:bg-zinc-800 rounded-xl px-5 py-2 flex gap-2">
+      <dialog className="z-50 bg-transparent animate__animated animate__fadeInDown animate__faster  dark:text-white p-3 w-full rounded-xl top-0" open={openTextOptions}>
+      <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
 
-      <Select>
+      <Select onValueChange={(value) => textOptionsApply('fontFamily', value)}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Font Family" />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
-          <SelectLabel>Fruits</SelectLabel>
-          <SelectItem value="apple">Apple</SelectItem>
-          <SelectItem value="banana">Banana</SelectItem>
-          <SelectItem value="blueberry">Blueberry</SelectItem>
-          <SelectItem value="grapes">Grapes</SelectItem>
-          <SelectItem value="pineapple">Pineapple</SelectItem>
+          <SelectLabel>Font Family</SelectLabel>
+          {
+            fontFamily.map((font, index) => (
+              <SelectItem style={{fontFamily: font.family}} key={index+122334} value={font.family}>{font.title}</SelectItem>
+            ))
+          }
+          
         </SelectGroup>
       </SelectContent>
     </Select>
@@ -321,9 +323,7 @@ const Banner = () => {
       <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('italic')}><Italic/></Button>
       <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('underline')}><Underline/></Button>
       <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('strike')}><Strikethrough/></Button>
-      {/* <button onClick={() => textOptionsApply('fontSize')}>Font Size</button>
-      <button onClick={() => textOptionsApply('fontColor')}>Font Color</button>
-      <button onClick={() => textOptionsApply('fontFamily')}>Font Family</button> */}
+      <Input onChange={(e) => {textOptionsApply('fontColor', '', e.target.value)}} className="rounded-lg w-20" type="color" defaultValue={'#000'}/>
         </div>
       </dialog>
       <FabCanvas
@@ -333,8 +333,6 @@ const Banner = () => {
         deleteObject={deleteObject}
         bringFront={bringFront}
         sendBack={sendBack}
-        height={500}
-        width={500}
         setFabCanvas={setFabCanvas}
       />
     </div>
@@ -356,8 +354,8 @@ type FabCanvasProps = {
 };
 
 const FabCanvas = ({
-  width = 600,
-  height = 600,
+  width = 800,
+  height = 500,
   bgColor = "#ffff",
   setFabCanvas,
   bringFront,
@@ -388,10 +386,10 @@ const FabCanvas = ({
   }, [width, height, bgColor, setFabCanvas]);
 
   return (
-    <div className="border">
+    <div className="w-full flex justify-center">
       <ContextMenu>
         <ContextMenuTrigger>
-          <canvas onClick={handleObjectClick} ref={canvasRef} width={width} height={height} />
+          <canvas className=" mx-auto" onClick={handleObjectClick} ref={canvasRef} width={width} height={height} />
         </ContextMenuTrigger>
 
         <ContextMenuContent className="w-60">
