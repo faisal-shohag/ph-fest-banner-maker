@@ -1,13 +1,35 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
-import { Canvas, FabricImage, FabricObject, IText } from "fabric";
+import {
+  ActiveSelection,
+  Canvas,
+  FabricImage,
+  FabricObject,
+  IText,
+} from "fabric";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ContextMenu, ContextMenuCheckboxItem, ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubContent, ContextMenuSubTrigger, ContextMenuTrigger } from "@/components/ui/context-menu";
-import { Clipboard, Copy, Trash } from "lucide-react";
+import {
+  ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { IoDuplicateOutline } from "react-icons/io5";
+import { Clipboard, Copy, Trash2 } from "lucide-react";
 
 const Banner = () => {
   const [fabCanvas, setFabCanvas] = useState<Canvas | null>(null);
-  const [clipboard, setClipboard] = useState<FabricObject | null>(null)
+  const [clipboard, setClipboard] = useState<FabricObject | null>(null);
+
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fabCanvas) return;
@@ -21,7 +43,6 @@ const Banner = () => {
       const imageUrl = reader.result as string;
       FabricImage.fromURL(imageUrl)
         .then((img: FabricImage) => {
-          console.log(img);
           img.scaleToWidth(200);
           img.set({
             left: 100,
@@ -114,38 +135,83 @@ const Banner = () => {
     }
   };
 
-  
   const copy = () => {
     if (!fabCanvas) return;
 
     const activeObject = fabCanvas.getActiveObject();
     if (activeObject) {
-      activeObject.clone()
-      .then((cloned) => {
-        setClipboard(cloned)
-      })
+      activeObject.clone().then((cloned) => {
+        setClipboard(cloned);
+      });
+    }
+  };
+
+  const paste = async () => {
+    if (!fabCanvas || !clipboard) return;
+
+    try {
+      const clonedObj = await clipboard.clone();
+      fabCanvas.discardActiveObject();
+      clonedObj.set({
+        left: clonedObj.left! + 10, // Offset to avoid overlapping
+        top: clonedObj.top! + 10,
+        selectable: true,
+      });
+
+      if (clonedObj instanceof ActiveSelection) {
+        clonedObj.canvas = fabCanvas;
+        clonedObj.forEachObject((obj) => {
+          fabCanvas.add(obj);
+        });
+        clonedObj.setCoords();
+      } else {
+        fabCanvas.add(clonedObj);
+      }
+
+      clipboard.top += 10;
+      clipboard.left += 10;
+      fabCanvas.setActiveObject(clonedObj);
+      fabCanvas.requestRenderAll();
+    } catch (error) {
+      console.error("Paste failed:", error);
+    }
+  };
+
+  const duplicate = async () => {
+    if (!fabCanvas) return;
+
+    const activeObject = fabCanvas.getActiveObject();
+    if (activeObject) {
+      const clonedObj = await activeObject.clone();
+      clonedObj.set({
+        left: clonedObj.left! + 10, // Offset to avoid overlapping
+        top: clonedObj.top! + 10,
+        selectable: true,
+      });
+
+      if (clonedObj instanceof ActiveSelection) {
+        clonedObj.canvas = fabCanvas;
+        clonedObj.forEachObject((obj) => {
+          fabCanvas.add(obj);
+        });
+        clonedObj.setCoords();
+      } else {
+        fabCanvas.add(clonedObj);
+      }
+
+      fabCanvas.setActiveObject(clonedObj);
+      fabCanvas.requestRenderAll();
     }
   };
   
-
- const pasteObject = async () => {
-  if (!fabCanvas || !clipboard) return;
-
-  try {
-    const clonedObj = await clipboard.clone();
-    clonedObj.set({
-      left: clonedObj.left! + 10, // Offset to avoid overlapping
-      top: clonedObj.top! + 10,
-      selectable: true,
-    });
-
-    fabCanvas.add(clonedObj);
-    fabCanvas.setActiveObject(clonedObj);
-    fabCanvas.renderAll();
-  } catch (error) {
-    console.error('Paste failed:', error);
+ fabCanvas?.on('mouse:down', (options) => {
+  const target = options.target;
+  if (target && target.type === 'i-text') {
+    console.log("show menu")
+  } else{
+  console.log("hide menu")
   }
-}
+});
 
   const deleteObject = () => {
     if (!fabCanvas) return;
@@ -183,7 +249,17 @@ const Banner = () => {
       <Input type="url" onChange={handleImageFromURL} placeholder="Image URL" />
       <button onClick={handleAddText}>Add Text</button>
       <button onClick={textBold}>Bold</button>
-      <FabCanvas deleteObject={deleteObject} bringFront={bringFront} sendBack={sendBack} height={500} width={500} setFabCanvas={setFabCanvas} />
+      <FabCanvas
+        duplicate={duplicate}
+        copy={copy}
+        paste={paste}
+        deleteObject={deleteObject}
+        bringFront={bringFront}
+        sendBack={sendBack}
+        height={500}
+        width={500}
+        setFabCanvas={setFabCanvas}
+      />
     </div>
   );
 };
@@ -196,6 +272,10 @@ type FabCanvasProps = {
   bringFront?: () => void;
   sendBack?: () => void;
   deleteObject?: () => void;
+  copy?: () => void;
+  paste?: () => void;
+  duplicate?: () => void;
+  handleObjectClick?: () => void;
 };
 
 const FabCanvas = ({
@@ -205,7 +285,11 @@ const FabCanvas = ({
   setFabCanvas,
   bringFront,
   sendBack,
-  deleteObject
+  deleteObject,
+  copy,
+  paste,
+  duplicate,
+  handleObjectClick
 }: FabCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -230,42 +314,63 @@ const FabCanvas = ({
     <div className="border">
       <ContextMenu>
         <ContextMenuTrigger>
-          <canvas ref={canvasRef} width={width} height={height} />
+          <canvas onClick={handleObjectClick} ref={canvasRef} width={width} height={height} />
         </ContextMenuTrigger>
 
-         <ContextMenuContent className="w-60">
-        <ContextMenuItem>
-            <Copy/> Copy 
-             <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
-        </ContextMenuItem>
-         <ContextMenuItem>
-            <Clipboard/> Paste 
-             <ContextMenuShortcut>Ctrl+V</ContextMenuShortcut>
-        </ContextMenuItem>
+        <ContextMenuContent className="w-60">
+          <ContextMenuItem onClick={copy}>
+            <Copy /> Copy
+            <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={paste}>
+            <Clipboard /> Paste
+            <ContextMenuShortcut>Ctrl+V</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={duplicate}>
+            <IoDuplicateOutline /> Duplicate
+                <ContextMenuShortcut>Ctrl+D</ContextMenuShortcut>
+          </ContextMenuItem>
 
           <ContextMenuItem onClick={deleteObject}>
-            <Trash/> Delete 
-             <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
-        </ContextMenuItem>
-         <ContextMenuSeparator />
-        <ContextMenuItem onClick={bringFront}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <path fill="currentColor" d="M12.75 5.82v8.43a.75.75 0 1 1-1.5 0V5.81L8.99 8.07A.75.75 0 1 1 7.93 7l2.83-2.83a1.75 1.75 0 0 1 2.47 0L16.06 7A.75.75 0 0 1 15 8.07l-2.25-2.25M15 10.48l6.18 3.04a1 1 0 0 1 0 1.79l-7.86 3.86a3 3 0 0 1-2.64 0l-7.86-3.86a1 1 0 0 1 0-1.79L9 10.48v1.67L4.4 14.41l6.94 3.42c.42.2.9.2 1.32 0l6.94-3.42-4.6-2.26v-1.67z"></path>
-</svg> Bring Front
-          <ContextMenuShortcut>Ctrl+Shift+F</ContextMenuShortcut>
-        </ContextMenuItem>
-        <ContextMenuItem onClick={sendBack}>
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-  <path fill="currentColor" d="M 12.75 18.12 V 9.75 a 0.75 0.75 0 1 0 -1.5 0 v 8.37 l -2.26 -2.25 a 0.75 0.75 0 0 0 -1.06 1.06 l 2.83 2.82 c 0.68 0.69 1.79 0.69 2.47 0 l 2.83 -2.82 A 0.75 0.75 0 0 0 15 15.87 l -2.25 2.25 Z M 15 11.85 v 1.67 l 6.18 -3.04 a 1 1 0 0 0 0 -1.79 l -7.86 -3.86 a 3 3 0 0 0 -2.64 0 L 2.82 8.69 a 1 1 0 0 0 0 1.8 L 9 13.51 v -1.67 L 4.4 9.6 l 6.94 -3.42 c 0.42 -0.2 0.9 -0.2 1.32 0 L 19.6 9.6 L 15 11.85 Z"></path>
-</svg> Send Back
-          <ContextMenuShortcut>Ctrl+Shift+B</ContextMenuShortcut>
-        </ContextMenuItem>
-        
-        {/* <ContextMenuItem inset>
+            <Trash2 /> Delete
+          </ContextMenuItem>
+          <ContextMenuSeparator />
+          <ContextMenuItem onClick={bringFront}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M12.75 5.82v8.43a.75.75 0 1 1-1.5 0V5.81L8.99 8.07A.75.75 0 1 1 7.93 7l2.83-2.83a1.75 1.75 0 0 1 2.47 0L16.06 7A.75.75 0 0 1 15 8.07l-2.25-2.25M15 10.48l6.18 3.04a1 1 0 0 1 0 1.79l-7.86 3.86a3 3 0 0 1-2.64 0l-7.86-3.86a1 1 0 0 1 0-1.79L9 10.48v1.67L4.4 14.41l6.94 3.42c.42.2.9.2 1.32 0l6.94-3.42-4.6-2.26v-1.67z"
+              ></path>
+            </svg>{" "}
+            Bring Front
+            <ContextMenuShortcut>Ctrl+Shift+F</ContextMenuShortcut>
+          </ContextMenuItem>
+          <ContextMenuItem onClick={sendBack}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+            >
+              <path
+                fill="currentColor"
+                d="M 12.75 18.12 V 9.75 a 0.75 0.75 0 1 0 -1.5 0 v 8.37 l -2.26 -2.25 a 0.75 0.75 0 0 0 -1.06 1.06 l 2.83 2.82 c 0.68 0.69 1.79 0.69 2.47 0 l 2.83 -2.82 A 0.75 0.75 0 0 0 15 15.87 l -2.25 2.25 Z M 15 11.85 v 1.67 l 6.18 -3.04 a 1 1 0 0 0 0 -1.79 l -7.86 -3.86 a 3 3 0 0 0 -2.64 0 L 2.82 8.69 a 1 1 0 0 0 0 1.8 L 9 13.51 v -1.67 L 4.4 9.6 l 6.94 -3.42 c 0.42 -0.2 0.9 -0.2 1.32 0 L 19.6 9.6 L 15 11.85 Z"
+              ></path>
+            </svg>{" "}
+            Send Back
+            <ContextMenuShortcut>Ctrl+Shift+B</ContextMenuShortcut>
+          </ContextMenuItem>
+
+          {/* <ContextMenuItem inset>
           Reload
           <ContextMenuShortcut>⌘R</ContextMenuShortcut>
         </ContextMenuItem> */}
-        {/* <ContextMenuSub>
+          {/* <ContextMenuSub>
           <ContextMenuSubTrigger inset>More Tools</ContextMenuSubTrigger>
           <ContextMenuSubContent className="w-44">
             <ContextMenuItem>Save Page...</ContextMenuItem>
@@ -277,26 +382,23 @@ const FabCanvas = ({
             <ContextMenuItem variant="destructive">Delete</ContextMenuItem>
           </ContextMenuSubContent>
         </ContextMenuSub> */}
-        {/* <ContextMenuSeparator />
+          {/* <ContextMenuSeparator />
         <ContextMenuCheckboxItem>
           Show Bookmarks
         </ContextMenuCheckboxItem>
         <ContextMenuCheckboxItem>Show Full URLs</ContextMenuCheckboxItem>
         <ContextMenuSeparator /> */}
-        {/* <ContextMenuRadioGroup value="pedro">
+          {/* <ContextMenuRadioGroup value="pedro">
           <ContextMenuLabel inset>People</ContextMenuLabel>
           <ContextMenuRadioItem value="pedro">
             Pedro Duarte
           </ContextMenuRadioItem>
           <ContextMenuRadioItem value="colm">Colm Tuite</ContextMenuRadioItem>
         </ContextMenuRadioGroup> */}
-      </ContextMenuContent>
-
+        </ContextMenuContent>
       </ContextMenu>
     </div>
   );
 };
-
-
 
 export default Banner;
