@@ -5,6 +5,7 @@ import {
   FabricImage,
   FabricObject,
   IText,
+  Point,
 } from "fabric";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -31,16 +32,45 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
+} from "@/components/ui/select";
 import { IoDuplicateOutline } from "react-icons/io5";
-import { Clipboard, Copy, Italic, Strikethrough, Trash2, Underline } from "lucide-react";
+import {
+  Clipboard,
+  Copy,
+  Italic,
+  Strikethrough,
+  Trash2,
+  Underline,
+} from "lucide-react";
 import { ImBold } from "react-icons/im";
+import { BiSolidWidget } from "react-icons/bi";
+import { IoIosImages } from "react-icons/io";
+import { FaShapes } from "react-icons/fa";
 
 const Banner = () => {
   const [fabCanvas, setFabCanvas] = useState<Canvas | null>(null);
   const [clipboard, setClipboard] = useState<FabricObject | null>(null);
-  const [openTextOptions, setOpenTextOption] = useState(false)
+  const [openTextOptions, setOpenTextOption] = useState(false);
 
+  useEffect(() => {
+    if (!fabCanvas) return;
+
+    const text = new IText("Hello World", {
+      left: 100,
+      top: 100,
+      fill: "#eeee",
+      fontSize: 20,
+      selectable: true,
+    });
+
+    fabCanvas.add(text);
+    fabCanvas.renderAll();
+
+    // Cleanup
+    return () => {
+      fabCanvas?.dispose();
+    };
+  }, [fabCanvas]);
 
   const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     if (!fabCanvas) return;
@@ -111,65 +141,103 @@ const Banner = () => {
     fabCanvas.renderAll();
   };
 
- const textOptionsApply = (option: string, fontFamily?:string, fontColor?:string) => {
-  if (!fabCanvas) return;
+  const textOptionsApply = (
+    option: string,
+    fontFamily?: string,
+    fontColor?: string
+  ) => {
+    if (!fabCanvas) return;
 
-  const activeObject = fabCanvas.getActiveObject();
-  if (activeObject && activeObject.type === 'i-text') {
-    const iText = activeObject as IText;
+    const activeObject = fabCanvas.getActiveObject();
+    if (activeObject && activeObject.type === "i-text") {
+      const iText = activeObject as IText;
 
-    // Get the current selection range
-    const selectionStart = iText.selectionStart || 0;
-    let selectionEnd = iText.selectionEnd || 0;
-    if (selectionStart === 0 && selectionEnd === 0) {
-      selectionEnd = iText.text.length;
+      // Get the current selection range
+      const selectionStart = iText.selectionStart || 0;
+      let selectionEnd = iText.selectionEnd || 0;
+      if (selectionStart === 0 && selectionEnd === 0) {
+        selectionEnd = iText.text.length;
+      }
+
+      const currentStyles = iText.getSelectionStyles(
+        selectionStart,
+        selectionEnd
+      );
+
+      switch (option) {
+        case "bold":
+          iText.setSelectionStyles(
+            {
+              fontWeight: currentStyles.every(
+                (style) => style.fontWeight === "bold"
+              )
+                ? "normal"
+                : "bold",
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "italic":
+          iText.setSelectionStyles(
+            {
+              fontStyle: currentStyles.every(
+                (style) => style.fontStyle === "italic"
+              )
+                ? "normal"
+                : "italic",
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "underline":
+          iText.setSelectionStyles(
+            {
+              underline: currentStyles.every(
+                (style) => style.underline === true
+              )
+                ? false
+                : true,
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "strike":
+          iText.setSelectionStyles(
+            {
+              linethrough: currentStyles.every(
+                (style) => style.linethrough === true
+              )
+                ? false
+                : true,
+            },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+        case "fontColor":
+          if (fontColor) {
+            iText.setSelectionStyles(
+              { fill: fontColor },
+              selectionStart,
+              selectionEnd
+            );
+          }
+          break;
+        case "fontFamily":
+          iText.setSelectionStyles(
+            { fontFamily },
+            selectionStart,
+            selectionEnd
+          );
+          break;
+      }
+
+      fabCanvas.renderAll();
     }
-
-    const currentStyles = iText.getSelectionStyles(selectionStart, selectionEnd);
-
-    switch (option) {
-      case 'bold':
-
-        iText.setSelectionStyles(
-          { fontWeight: currentStyles.every((style) => style.fontWeight === 'bold') ? 'normal' : 'bold' },
-          selectionStart,
-          selectionEnd
-        );
-        break;
-      case 'italic':
-        iText.setSelectionStyles(
-          { fontStyle: currentStyles.every((style) => style.fontStyle === 'italic') ? 'normal' : 'italic' },
-          selectionStart,
-          selectionEnd
-        );
-        break;
-      case 'underline':
-        iText.setSelectionStyles(
-          { underline: currentStyles.every((style) => style.underline === true) ? false : true },
-          selectionStart,
-          selectionEnd
-        );
-        break;
-      case 'strike':
-        iText.setSelectionStyles(
-          { linethrough:  currentStyles.every((style) => style.linethrough === true) ? false : true },
-          selectionStart,
-          selectionEnd
-        );
-        break;
-      case 'fontColor':
-        if (fontColor) {
-          iText.setSelectionStyles({ fill: fontColor }, selectionStart, selectionEnd);
-        }
-        break;
-      case 'fontFamily':
-          iText.setSelectionStyles({fontFamily}, selectionStart, selectionEnd);
-        break;
-    }
-
-    fabCanvas.renderAll();
-  }
-};
+  };
   const copy = () => {
     if (!fabCanvas) return;
 
@@ -238,15 +306,18 @@ const Banner = () => {
       fabCanvas.requestRenderAll();
     }
   };
-  
- fabCanvas?.on('mouse:down', (options) => {
-  const target = options.target;
-  if (target && target.type === 'i-text') {
-    if(!openTextOptions) setOpenTextOption(true)
-  } else{
-    if(openTextOptions) setOpenTextOption(false)
-  }
-});
+
+  fabCanvas?.on("mouse:down", (options) => {
+    const target = options.target;
+    //  if(!target) {
+
+    //  }
+    if (target && target.type === "i-text") {
+      if (!openTextOptions) setOpenTextOption(true);
+    } else {
+      if (openTextOptions) setOpenTextOption(false);
+    }
+  });
 
   const deleteObject = () => {
     if (!fabCanvas) return;
@@ -279,51 +350,122 @@ const Banner = () => {
   };
 
   const fontFamily = [
- {
-  title: 'Lora',
-  family: '"Lora", serif'
- },
- {
-  title: 'Roboto',
-  family: '"Roboto", sans-serif'
- },
- {
-  title: 'Inter',
-  family: '"Inter", sans-serif'
- },
-  ]
+    {
+      title: "Lora",
+      family: '"Lora", serif',
+    },
+    {
+      title: "Roboto",
+      family: '"Roboto", sans-serif',
+    },
+    {
+      title: "Inter",
+      family: '"Inter", sans-serif',
+    },
+  ];
 
+  fabCanvas?.on("mouse:wheel", (opt) => {
+    if (!fabCanvas) return;
+
+    const delta = opt.e.deltaY;
+    const ctrlKey = opt.e.ctrlKey;
+
+    if (ctrlKey) {
+      opt.e.preventDefault();
+      opt.e.stopPropagation();
+
+      // Get the pointer position relative to the canvas
+      const pointer = fabCanvas.getPointer(opt.e);
+
+      console.log(pointer);
+
+      // Current zoom level
+      let zoom = fabCanvas.getZoom();
+
+      // Calculate zoom factor (positive delta = zoom out, negative = zoom in)
+      const zoomFactor = delta > 0 ? 0.9 : 1.1;
+      zoom *= zoomFactor;
+
+      // Apply zoom limits
+      if (zoom > 20) zoom = 20; // Max zoom
+      if (zoom < 0.1) zoom = 0.1; // Min zoom
+
+      // Zoom to the mouse pointer position instead of canvas center
+      fabCanvas.zoomToPoint(new Point(pointer.x, pointer.y), zoom);
+      fabCanvas.renderAll();
+    }
+  });
 
   return (
     <div>
+
+      <SideBar/>
       <input type="file" accept="image/*" onChange={handleImageUpload} />
       <Input type="url" onChange={handleImageFromURL} placeholder="Image URL" />
       <button onClick={handleAddText}>Add Text</button>
-      <dialog className="z-50 bg-transparent animate__animated animate__fadeInDown animate__faster  dark:text-white p-3 w-full rounded-xl top-0" open={openTextOptions}>
-      <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
+      <dialog
+        className="z-50 bg-transparent animate__animated animate__fadeInDown animate__faster  dark:text-white p-3 w-full rounded-xl top-0"
+        open={openTextOptions}
+      >
+        <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
+          <Select
+            onValueChange={(value) => textOptionsApply("fontFamily", value)}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Font Family" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Font Family</SelectLabel>
+                {fontFamily.map((font, index) => (
+                  <SelectItem
+                    style={{ fontFamily: font.family }}
+                    key={index + 122334}
+                    value={font.family}
+                  >
+                    {font.title}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
 
-      <Select onValueChange={(value) => textOptionsApply('fontFamily', value)}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Font Family" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          <SelectLabel>Font Family</SelectLabel>
-          {
-            fontFamily.map((font, index) => (
-              <SelectItem style={{fontFamily: font.family}} key={index+122334} value={font.family}>{font.title}</SelectItem>
-            ))
-          }
-          
-        </SelectGroup>
-      </SelectContent>
-    </Select>
-
-      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('bold')}><ImBold/></Button>
-      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('italic')}><Italic/></Button>
-      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('underline')}><Underline/></Button>
-      <Button size={'sm'} variant={'outline'} onClick={() => textOptionsApply('strike')}><Strikethrough/></Button>
-      <Input onChange={(e) => {textOptionsApply('fontColor', '', e.target.value)}} className="rounded-lg w-20" type="color" defaultValue={'#000'}/>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("bold")}
+          >
+            <ImBold />
+          </Button>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("italic")}
+          >
+            <Italic />
+          </Button>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("underline")}
+          >
+            <Underline />
+          </Button>
+          <Button
+            size={"sm"}
+            variant={"outline"}
+            onClick={() => textOptionsApply("strike")}
+          >
+            <Strikethrough />
+          </Button>
+          <Input
+            onChange={(e) => {
+              textOptionsApply("fontColor", "", e.target.value);
+            }}
+            className="rounded-lg w-20"
+            type="color"
+            defaultValue={"#000"}
+          />
         </div>
       </dialog>
       <FabCanvas
@@ -355,8 +497,8 @@ type FabCanvasProps = {
 
 const FabCanvas = ({
   width = 800,
-  height = 500,
-  bgColor = "#ffff",
+  height = 600,
+  bgColor = "#2222",
   setFabCanvas,
   bringFront,
   sendBack,
@@ -364,7 +506,7 @@ const FabCanvas = ({
   copy,
   paste,
   duplicate,
-  handleObjectClick
+  handleObjectClick,
 }: FabCanvasProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
@@ -389,7 +531,13 @@ const FabCanvas = ({
     <div className="w-full flex justify-center">
       <ContextMenu>
         <ContextMenuTrigger>
-          <canvas className=" mx-auto" onClick={handleObjectClick} ref={canvasRef} width={width} height={height} />
+          <canvas
+            className=" mx-auto"
+            onClick={handleObjectClick}
+            ref={canvasRef}
+            width={width}
+            height={height}
+          />
         </ContextMenuTrigger>
 
         <ContextMenuContent className="w-60">
@@ -403,7 +551,7 @@ const FabCanvas = ({
           </ContextMenuItem>
           <ContextMenuItem onClick={duplicate}>
             <IoDuplicateOutline /> Duplicate
-                <ContextMenuShortcut>Ctrl+D</ContextMenuShortcut>
+            <ContextMenuShortcut>Ctrl+D</ContextMenuShortcut>
           </ContextMenuItem>
 
           <ContextMenuItem onClick={deleteObject}>
@@ -475,5 +623,30 @@ const FabCanvas = ({
     </div>
   );
 };
+
+const SideBar = () => {
+  return <div className=" fixed h-lvh flex items-center">
+     <div className="z-50 left-0 top-0 dark:bg-zinc-900 shadow-2xl rounded-full py-5 px-3 flex flex-col gap-5">
+      <div className="flex flex-col items-center gap-1">
+        <div><BiSolidWidget size={20} /></div>
+        <div className="text-xs font-bold">Design</div>
+      </div>
+
+       <div className="flex flex-col items-center gap-1">
+        <div><FaShapes size={20}/></div>
+        <div className="text-xs font-bold">Shapes</div>
+      </div>
+
+      <div className="flex flex-col items-center gap-1">
+        <div><IoIosImages size={20}/></div>
+        <div className="text-xs font-bold">Images</div>
+      </div>
+
+     
+     </div>
+  </div>
+}
+
+
 
 export default Banner;
