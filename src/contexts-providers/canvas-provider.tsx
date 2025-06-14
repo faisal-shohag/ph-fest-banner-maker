@@ -14,12 +14,11 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
   const [openTextOptions, setOpenTextOption] = useState(false);
   const [aspect, setAspect] = useState(1 / 1);
 
-  const handleImageFromURL = (imageUrl: string) => {
+  const handleImageFromURL = async (imageUrl: string) => {
     if (!fabCanvas || !imageUrl) return;
-
-    FabricImage.fromURL(imageUrl, undefined, { crossOrigin: "Anonymous" })
+    FabricImage.fromURL(imageUrl, { crossOrigin: "anonymous" })
       .then((img: FabricImage) => {
-        img.set({ crossOrigin: 'Anonymous' });
+        img.set({ crossOrigin: "anonymous" });
         img.scaleToWidth(Math.min(img.width ?? 0, fabCanvas.width ?? 500));
         img.scaleToHeight(Math.min(img.height ?? 0, fabCanvas.height ?? 500));
         img.set({
@@ -35,13 +34,14 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
       });
   };
 
+
   const addText = () => {
     if (!fabCanvas) return;
     const text = new IText("Add Text Here", {
-      left: fabCanvas.width / 2, 
+      left: fabCanvas.width / 2,
       top: fabCanvas.height / 2,
-      originX: "center", 
-      originY: "center", 
+      originX: "center",
+      originY: "center",
       fill: "#eeee",
       fontSize: 20,
       fontFamily: "Inter",
@@ -61,9 +61,12 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     const activeObject = fabCanvas.getActiveObject();
     if (activeObject instanceof IText) {
       const iText = activeObject as IText;
-      const selectionStart = iText.selectionStart || 0;
+      let selectionStart = iText.selectionStart || 0;
       let selectionEnd = iText.selectionEnd || 0;
+
+      
       if (selectionStart === selectionEnd) {
+        selectionStart = 0
         selectionEnd = iText.text?.length || 0;
       }
       const currentStyles = iText.getSelectionStyles(
@@ -214,7 +217,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     if (!activeObject) return;
 
     if (activeObject.type == "image" && activeObject._element.currentSrc) {
-      FabricImage.fromURL(activeObject._element.currentSrc, undefined, {
+      FabricImage.fromURL(activeObject._element.currentSrc, {
         crossOrigin: "anonymous",
       })
         .then((img: FabricImage) => {
@@ -240,22 +243,32 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     setAspect(w / h);
   };
 
-  const exportCanvas = (format:any, title:string) => {
-    const canvasElement:any = fabCanvas?.toCanvasElement();
+
+
+
+
+const exportCanvas = (format, title: string) => {
   try {
-    const dataURL = canvasElement.toDataURL({
-      format: format,
+    // Try using Fabric.js toDataURL directly (sometimes works better)
+    console.log(fabCanvas?.height)
+    console.log(fabCanvas?.width)
+    const dataURL = fabCanvas?.toDataURL({
+      format,
       quality: 1,
-      multiplier: 1 / 2,
+      multiplier: 2,
     });
-    const link = document.createElement("a");
+    const link:any = document.createElement("a");
     link.href = dataURL;
     link.download = `${title}.${format}`;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   } catch (e) {
     console.error("Export failed:", e);
   }
-  }
+};
+
+
 
   // useEffect(() => {
   //     if (!fabCanvas) return;
@@ -296,7 +309,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     handleCanvasBgImage,
     handleRemoveBg,
     addText,
-    exportCanvas
+    exportCanvas,
   };
 
   return <CanvasContext value={value}>{children}</CanvasContext>;

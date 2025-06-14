@@ -1,3 +1,4 @@
+@import url('https://fonts.maateen.me/kalpurush/font.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -122,4 +123,16 @@
 
 *{
   font-family: 'Inter', 'sans-serif';
+}
+
+
+.shimmer {
+  mask: linear-gradient(-60deg, #000 30%, #0005, #000 80%) right/350% 100%;
+  animation: shimmer 2.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    mask-position: left;
+  }
 }

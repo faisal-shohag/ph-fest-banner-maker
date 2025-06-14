@@ -103,6 +103,10 @@ const Banner = () => {
       title: "Inter",
       family: '"Inter", sans-serif',
     },
+    {
+      title: "কালপুরুষ",
+      family: '"Kalpurush", serif',
+    },
   ];
 
   // fabCanvas?.on("mouse:wheel", (opt) => {
