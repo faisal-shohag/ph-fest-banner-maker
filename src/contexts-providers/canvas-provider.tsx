@@ -17,8 +17,9 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
   const handleImageFromURL = (imageUrl: string) => {
     if (!fabCanvas || !imageUrl) return;
 
-    FabricImage.fromURL(imageUrl, undefined, { crossOrigin: "anonymous" })
+    FabricImage.fromURL(imageUrl, undefined, { crossOrigin: "Anonymous" })
       .then((img: FabricImage) => {
+        img.set({ crossOrigin: 'Anonymous' });
         img.scaleToWidth(Math.min(img.width ?? 0, fabCanvas.width ?? 500));
         img.scaleToHeight(Math.min(img.height ?? 0, fabCanvas.height ?? 500));
         img.set({
@@ -239,6 +240,23 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     setAspect(w / h);
   };
 
+  const exportCanvas = (format:any, title:string) => {
+    const canvasElement:any = fabCanvas?.toCanvasElement();
+  try {
+    const dataURL = canvasElement.toDataURL({
+      format: format,
+      quality: 1,
+      multiplier: 1 / 2,
+    });
+    const link = document.createElement("a");
+    link.href = dataURL;
+    link.download = `${title}.${format}`;
+    link.click();
+  } catch (e) {
+    console.error("Export failed:", e);
+  }
+  }
+
   // useEffect(() => {
   //     if (!fabCanvas) return;
 
@@ -277,7 +295,8 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     aspectRatioControl,
     handleCanvasBgImage,
     handleRemoveBg,
-    addText
+    addText,
+    exportCanvas
   };
 
   return <CanvasContext value={value}>{children}</CanvasContext>;
