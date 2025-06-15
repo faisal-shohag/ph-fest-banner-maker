@@ -27,6 +27,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
           selectable: true,
         });
         fabCanvas.add(img);
+        fabCanvas.setActiveObject(img);
         fabCanvas.renderAll();
       })
       .catch((error) => {
@@ -221,8 +222,30 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
         crossOrigin: "anonymous",
       })
         .then((img: FabricImage) => {
-          img.scaleToWidth(Math.min(img.width ?? 0, fabCanvas.width ?? 500));
-          img.scaleToHeight(Math.min(img.height ?? 0, fabCanvas.height ?? 500));
+        const canvasWidth = fabCanvas.getWidth();
+        const canvasHeight = fabCanvas.getHeight();
+        const imgAspect = img.width / img.height;
+        const canvasAspect = canvasWidth / canvasHeight;
+
+        let scale = 1;
+        if (imgAspect > canvasAspect) {
+          // Image is wider than canvas, scale to height
+          scale = canvasHeight / img.height;
+        } else {
+          // Image is taller than canvas, scale to width
+          scale = canvasWidth / img.width;
+        }
+
+        img.set({
+          left: 0,
+          top: 0,
+          originX: 'left',
+          originY: 'top',
+          scaleX: scale,
+          scaleY: scale,
+          selectable: false,
+        });
+
           fabCanvas.backgroundImage = img;
           fabCanvas.renderAll();
         })
@@ -231,6 +254,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
         });
     }
   };
+
   const handleRemoveBg = () => {
     if (!fabCanvas) return;
 
@@ -242,10 +266,6 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     const [w, h] = value.split(":").map(Number);
     setAspect(w / h);
   };
-
-
-
-
 
 const exportCanvas = (format, title: string) => {
   try {
@@ -289,7 +309,8 @@ const exportCanvas = (format, title: string) => {
   //     return () => {
   //       fabCanvas?.dispose();
   //     };
-  //   }, [fabCanvas]);
+  //   }, [fabCanvas])
+
 
   const value = {
     fabCanvas,

@@ -53,23 +53,63 @@ const ImageGallery = ({handleImageFromURL}) => {
     fileInputRef.current?.click();
   };
 
+  const resizeImage = (file, maxWidth = 1920, maxHeight = 1080) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const reader = new FileReader();
+
+    reader.onload = (e:any) => {
+      img.src = e.target.result as string;
+    };
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      let { width, height } = img;
+
+      // Scale dimensions proportionally
+      const scale = Math.min(maxWidth / width, maxHeight / height, 1);
+      width *= scale;
+      height *= scale;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx:any = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob((blob) => {
+        if (blob) {
+          resolve(blob);
+        } else {
+          reject("Canvas toBlob failed");
+        }
+      }, file.type || "image/jpeg");
+    };
+
+    reader.readAsDataURL(file);
+  });
+};
+
   const uploadToImageKit = async (file: any) => {
     setIsUploading(true);
     setUploadStatus("Uploading to ImageKit...");
 
     try {
       // Read file as data URL for ImageKit upload
-      const reader = new FileReader();
-      const filePromise = new Promise((resolve) => {
-        reader.onload = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-      });
+      // const reader = new FileReader();
+      // const filePromise = new Promise((resolve) => {
+      //   reader.onload = () => resolve(reader.result);
+      //   reader.readAsDataURL(file);
+      // });
 
-      const fileData: any = await filePromise;
+      // const fileData: any = await filePromise;
+      const resizedBlob: any = await resizeImage(file, 1920, 1080); // Resize to 1920x1080 max
+      const resizedFile = new File([resizedBlob], file.name, { type: file.type });
+
 
       // Upload to ImageKit
       const result = await imageKit.upload({
-        file: fileData,
+        file: resizedFile,
         fileName: file.name,
         folder: "/banner-images",
       });

@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import { Check, Save, Share2 } from "lucide-react";
 import { use, useState } from "react";
+import { GrUndo } from "react-icons/gr";
+import { GrRedo } from "react-icons/gr";
 
 import {
   Popover,
@@ -20,8 +22,8 @@ const TopBar = () => {
   const { user } = use(AuthContext) as any
 
   return (
-    <div className="fixed pl-20 dark:bg-zinc-800  py-2 px-7 z-[9] w-full flex justify-between">
-      <div className="flex items-center text-center">
+    <div className="fixed pl-20 dark:bg-zinc-800 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full flex justify-between">
+      <div className="flex items-center text-center gap-10">
         {editTitle ? (
           <div className="flex  items-center gap-2">
             <Input
@@ -48,6 +50,11 @@ const TopBar = () => {
            {title}
           </div>
         )}
+
+        <div className="flex items-center gap-5 text-2xl px-5 border-r border-l">
+          <Button  size={'sm'} variant={'outline'}><GrUndo/></Button>
+          <Button size={'sm'} variant={'outline'}><GrRedo/></Button>
+        </div>
       </div>
       <div className="flex gap-3 items-center">
         <AvatarDisplay user={user}/>

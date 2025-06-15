@@ -1,6 +1,14 @@
-import { useEffect, useRef } from 'react';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import api from '@/lib/api';
+import { useEffect, useRef } from "react";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 interface ImageType {
   id: number;
@@ -17,7 +25,7 @@ interface ImageResponse {
   hasMore: boolean;
 }
 
-const Images = ({handleImageFromURL}) => {
+const Images = ({ handleImageFromURL }) => {
   const observerRef = useRef<HTMLDivElement>(null);
 
   // Infinite query for images
@@ -30,7 +38,7 @@ const Images = ({handleImageFromURL}) => {
     isError,
     error,
   } = useInfiniteQuery({
-    queryKey: ['images'],
+    queryKey: ["images"],
     queryFn: async ({ pageParam = 1 }) => {
       const response = await api.get(`/image?page=${pageParam}&limit=12`);
       return {
@@ -98,19 +106,20 @@ const Images = ({handleImageFromURL}) => {
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <p className="font-medium">Error loading images</p>
           <p className="text-sm mt-1">
-            {error instanceof Error ? error.message : 'An unexpected error occurred'}
+            {error instanceof Error
+              ? error.message
+              : "An unexpected error occurred"}
           </p>
         </div>
       </div>
     );
   }
 
-
   return (
     <div className="mx-auto">
       <div className="mb-8">
         <p className="text-gray-600 dark:text-gray-400">
-          {allImages.length} image{allImages.length !== 1 ? 's' : ''} loaded
+          {allImages.length} image{allImages.length !== 1 ? "s" : ""} loaded
         </p>
       </div>
 
@@ -147,13 +156,29 @@ const Images = ({handleImageFromURL}) => {
                 key={image.id}
                 className="group relative bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
               >
-                {/* Image Container */}
-                <div className="aspect-square overflow-hidden bg-gray-100 dark:bg-zinc-800" onClick={()=>handleImageFromURL(image.url)}>
+                <div className="absolute z-20 right-0 top-1">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="h-8 w-8 p-0">
+                        <EllipsisVerticalIcon className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem>
+                        <Trash2Icon className="mr-2 h-4 w-4" />
+                        <span>Delete</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <div
+                  className="aspect-square overflow-hidden relative bg-gray-100 dark:bg-zinc-800"
+                  onClick={() => handleImageFromURL(image.url)}
+                >
                   <img
                     src={image.url}
-                    alt={image.title || 'Gallery image'}
+                    alt={image.title || "Gallery image"}
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                  
                   />
                 </div>
                 {/* Image Info */}

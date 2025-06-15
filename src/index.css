@@ -136,3 +136,8 @@
     mask-position: left;
   }
 }
+
+.sidebar-active::before{
+  content: '';
+  @apply bg-orange-500 dark:bg-zinc-900 h-[70%] w-[5px] left-0 top-2 rounded-full absolute
+}

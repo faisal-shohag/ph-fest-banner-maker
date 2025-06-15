@@ -44,11 +44,9 @@ const Banner = () => {
     fabCanvas,
     openTextOptions,
     setOpenTextOption,
-    textOptionsApply
+    textOptionsApply,
   } = useCanvas();
 
-
-  
 
   useEffect(() => {
     if (!fabCanvas) return;
@@ -72,9 +70,6 @@ const Banner = () => {
   }, [fabCanvas]);
 
 
-
-
-
   fabCanvas?.on("mouse:down", (options) => {
     const target = options.target;
     //  if(!target) {
@@ -87,6 +82,30 @@ const Banner = () => {
     }
   });
 
+ fabCanvas?.on("selection:created", (e) => {
+  if (e.selected.length === 1) {
+    e.selected[0].set({
+      borderColor: "#3B82F6", // Blue border for selection
+      cornerColor: "#FFF", // Matching blue corner handles
+      cornerSize: 8, // Larger corner size for easier grabbing
+      cornerStyle: "circle", // Circular corner handles
+      transparentCorners: false, // Solid corner fills
+      hasControls: true, // Enable resizing/rotating controls
+      borderScaleFactor: 2, // Thicker selection border
+      cornerStrokeColor: "#FFFFFF", // White outline for corners
+      cornerStrokeWidth: 1, // Stroke width for corner outlines
+      // selectionBackgroundColor: "rgba(59, 130, 246, 0.1)", // Light blue background tint
+      shadow: {
+        color: "rgba(0, 0, 0, 0.3)", // Subtle shadow for depth
+        blur: 5,
+        offsetX: 2,
+        offsetY: 2,
+      },
+      hoverCursor: "grab", // Hand cursor on hover
+    });
+    fabCanvas.renderAll(); // Ensure changes are rendered
+  }
+});
 
 
 
@@ -145,6 +164,7 @@ const Banner = () => {
       <div>
         <SideBar/>
       </div>
+      
       <div className="flex-1">
         <dialog
           className="z-[999] bg-transparent animate__animated animate__fadeInDown animate__faster  dark:text-white p-3 w-full rounded-xl top-10"
@@ -231,7 +251,6 @@ const FabCanvas = ({
      const {
     setFabCanvas,
     aspect,
-    aspectRatioControl,
     copy,
     paste,
     duplicate,
@@ -252,10 +271,10 @@ const FabCanvas = ({
 
   useEffect(() => {
     if (canvasRef.current) {
-      const newWidth = Math.min(canvasRef.current.offsetWidth, width);
+      // const newWidth = Math.min(canvasRef.current.offsetWidth, width);
       const canvas = new Canvas(canvasRef.current, {
-        width: newWidth,
-        height: newWidth / aspect,
+        width: width,
+        height: height,
         backgroundColor: bgColor,
         preserveObjectStacking: true,
       });
@@ -347,14 +366,14 @@ const FabCanvas = ({
   // Format zoom percentage for display
   const zoomPercentage = Math.round(zoom * 100);
 
-  const aspectFormat = {
-    "1.78": "16:9",
-    "1.00": "1:1",
-  };
+  // const aspectFormat = {
+  //   "1.78": "16:9",
+  //   "1.00": "1:1",
+  // };
 
   return (
     <div className="w-full flex flex-col justify-center items-center h-full relative">
-      <div className="my-2 pt-5">
+      {/* <div className="my-2 pt-5">
         <Select
           onValueChange={(value) => {
             aspectRatioControl(value);
@@ -368,16 +387,13 @@ const FabCanvas = ({
           <SelectContent>
             <SelectGroup>
               <SelectItem value="1:1">1:1</SelectItem>
-                {/* <SelectItem value="3:2">3:2</SelectItem>
-                <SelectItem value="4:3">4:3</SelectItem>
-                <SelectItem value="9:16">9:16</SelectItem> */}
               <SelectItem value="16:9">16:9</SelectItem>
 
             
             </SelectGroup>
           </SelectContent>
         </Select>
-      </div>
+      </div> */}
 
       <ContextMenu>
         <ContextMenuTrigger>
@@ -504,7 +520,7 @@ const FabCanvas = ({
       </ContextMenu>
 
       {/* Zoom Controls */}
-      <div className="mt-4  z-50 flex items-center gap-3 bg-white border dark:bg-zinc-900  rounded-lg px-4 py-2 shadow-sm">
+      <div className="mt-4  z-40 flex items-center gap-3 bg-white border dark:bg-zinc-900  rounded-lg px-4 py-2 shadow-sm">
         {/* Zoom Out Button */}
         <button
           onClick={() => {
