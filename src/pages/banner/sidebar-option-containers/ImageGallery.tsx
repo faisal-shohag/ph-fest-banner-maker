@@ -12,11 +12,11 @@ const ImageGallery = ({handleImageFromURL}) => {
   const { user } = use(AuthContext) as any;
   const queryClient = useQueryClient();
 
-  const imageKit: any = new ImageKit({
-    publicKey: "public_E1kM7KJqAME5gAI9Is7mxzYgt9A=",
-    privateKey: "private_EBzs2Uj2ygbrHYy7+/yDjZhUcIs=",
-    urlEndpoint: "https://ik.imagekit.io/anf",
-  });
+ const imageKit = new ImageKit({
+  publicKey: process.env.IMAGEKIT_PUBLIC_KEY as string,
+  privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
+  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT as string,
+});
 
   // Mutation to save image to database
   const saveImageMutation = useMutation({
@@ -109,7 +109,7 @@ const ImageGallery = ({handleImageFromURL}) => {
 
       // Upload to ImageKit
       const result = await imageKit.upload({
-        file: resizedFile,
+        file: resizedFile as any,
         fileName: file.name,
         folder: "/banner-images",
       });
