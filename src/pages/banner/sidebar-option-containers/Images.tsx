@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
 import {
@@ -8,7 +8,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface ImageType {
   id: number;
@@ -27,6 +38,9 @@ interface ImageResponse {
 
 const Images = ({ handleImageFromURL }) => {
   const observerRef = useRef<HTMLDivElement>(null);
+  const queryClient = useQueryClient();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<ImageType | null>(null);
 
   // Infinite query for images
   const {
@@ -51,6 +65,24 @@ const Images = ({ handleImageFromURL }) => {
     initialPageParam: 1,
   });
 
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (image:ImageType) => {
+      await api.delete(`/image/${image.id}/${image.meta.fileId}`);
+    },
+    onSuccess: () => {
+      // Invalidate and refetch images
+      queryClient.invalidateQueries({ queryKey: ["images"] });
+      toast.success("Image deleted successfully");
+      setDeleteDialogOpen(false);
+      setImageToDelete(null);
+    },
+    onError: (error) => {
+      toast.error("Failed to delete image");
+      console.error("Delete error:", error);
+    },
+  });
+
   // Intersection Observer for infinite scroll
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -72,15 +104,16 @@ const Images = ({ handleImageFromURL }) => {
   // Flatten all images from all pages
   const allImages = data?.pages.flatMap((page) => page.data) || [];
 
-  // const formatDate = (dateString: string) => {
-  //   return new Date(dateString).toLocaleDateString('en-US', {
-  //     year: 'numeric',
-  //     month: 'short',
-  //     day: 'numeric',
-  //     hour: '2-digit',
-  //     minute: '2-digit',
-  //   });
-  // };
+  const handleDeleteClick = (image: ImageType) => {
+    setImageToDelete(image);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (imageToDelete) {
+      deleteMutation.mutate(imageToDelete);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -96,6 +129,7 @@ const Images = ({ handleImageFromURL }) => {
       </div>
     );
   }
+
 
   if (isError) {
     return (
@@ -119,7 +153,7 @@ const Images = ({ handleImageFromURL }) => {
     <div className="mx-auto">
       <div className="mb-8">
         <p className="text-gray-600 dark:text-gray-400">
-          {allImages.length} image{allImages.length !== 1 ? "s" : ""} loaded
+          {allImages.length} image{allImages.length !== 1 ? "s" : ""}
         </p>
       </div>
 
@@ -164,7 +198,10 @@ const Images = ({ handleImageFromURL }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => handleDeleteClick(image)}
+                        className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
+                      >
                         <Trash2Icon className="mr-2 h-4 w-4" />
                         <span>Delete</span>
                       </DropdownMenuItem>
@@ -172,7 +209,7 @@ const Images = ({ handleImageFromURL }) => {
                   </DropdownMenu>
                 </div>
                 <div
-                  className="aspect-square overflow-hidden relative bg-gray-100 dark:bg-zinc-800"
+                  className="aspect-square overflow-hidden relative bg-gray-100 dark:bg-zinc-800 cursor-pointer"
                   onClick={() => handleImageFromURL(image.url)}
                 >
                   <img
@@ -181,23 +218,6 @@ const Images = ({ handleImageFromURL }) => {
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                   />
                 </div>
-                {/* Image Info */}
-                {/* <div className="p-4">
-                  {image.title && (
-                    <h3 className="font-medium text-gray-900 dark:text-white truncate mb-1">
-                      {image.title}
-                    </h3>
-                  )}
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {formatDate(image.createdAt)}
-                  </p>
-                  
-                  {image.meta?.width && image.meta?.height && (
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      {image.meta.width} × {image.meta.height}
-                    </p>
-                  )}
-                </div> */}
               </div>
             ))}
           </div>
@@ -237,13 +257,37 @@ const Images = ({ handleImageFromURL }) => {
             className="h-10 flex items-center justify-center"
           >
             {!hasNextPage && allImages.length > 0 && (
-              <p className="text-sm text-gray-500 dark:text-gray-400">
+              <p className="text-sm mt-10 text-gray-500 dark:text-gray-400">
                 You've reached the end!
               </p>
             )}
           </div>
         </>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Image</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this image? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setImageToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

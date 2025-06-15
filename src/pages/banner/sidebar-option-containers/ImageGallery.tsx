@@ -160,6 +160,7 @@ const ImageGallery = ({handleImageFromURL}) => {
   };
 
   const isProcessing = isUploading || saveImageMutation.isPending;
+   
 
   return (
     <div className="mx-auto">

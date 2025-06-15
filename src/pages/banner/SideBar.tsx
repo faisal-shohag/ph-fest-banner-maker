@@ -43,7 +43,7 @@ const SideBar = () => {
       <div className="z-[9999] dark:bg-zinc-800 bg-zinc-100 py-5 flex flex-col gap-5 min-w-[75px] max-w-[200px] justify-between">
         <div className="flex flex-col gap-10 pt-20">
           <div 
-            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded ${
+            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded-2xl ${
               activeOption === 'Design' 
                 ? 'bg-orange-200 dark:bg-zinc-600' 
                 : 'hover:bg-orange-200 dark:hover:bg-zinc-700'
@@ -57,7 +57,7 @@ const SideBar = () => {
           </div>
 
           <div 
-            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded ${
+            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded-2xl ${
               activeOption === 'Shapes' 
                 ? 'bg-orange-200 dark:bg-zinc-600' 
                 : 'hover:bg-orange-200 dark:hover:bg-zinc-700'
@@ -71,7 +71,7 @@ const SideBar = () => {
           </div>
 
           <div 
-            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded ${
+            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded-2xl ${
               activeOption === 'Text' 
                 ? 'bg-orange-200 dark:bg-zinc-600' 
                 : 'hover:bg-orange-200 dark:hover:bg-zinc-700'
@@ -85,7 +85,7 @@ const SideBar = () => {
           </div>
 
           <div 
-            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded ${
+            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded-2xl ${
               activeOption === 'Images' 
                 ? 'bg-orange-200 dark:bg-zinc-600' 
                 : 'hover:bg-orange-200 dark:hover:bg-zinc-700'
@@ -107,6 +107,7 @@ const SideBar = () => {
   );
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const FloatingContainer = ({ isOpen, activeOption, onClose }) => {
   const containerRef = useRef(null);
   const { handleImageFromURL } = useCanvas();
@@ -130,7 +131,7 @@ const FloatingContainer = ({ isOpen, activeOption, onClose }) => {
     <div className="z-50">
       <div 
         ref={containerRef}
-        className={`fixed top-15 left-20 !z-[999999999999999] h-[90%] p-5 rounded-xl border dark:bg-zinc-900 bg-white
+        className={`fixed top-15 overflow-y-auto  left-20 !z-[999999999999999] h-[90%] p-5 rounded-xl border dark:bg-zinc-900 bg-white
           transition-all duration-500 ease-in-out transform-gpu
           ${isOpen && activeOption
             ? 'w-[350px] opacity-100 translate-x-0' 

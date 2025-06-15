@@ -247,6 +247,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
         });
 
           fabCanvas.backgroundImage = img;
+          deleteObject()
           fabCanvas.renderAll();
         })
         .catch((error) => {
