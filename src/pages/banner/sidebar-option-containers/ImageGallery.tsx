@@ -13,9 +13,9 @@ const ImageGallery = ({handleImageFromURL}) => {
   const queryClient = useQueryClient();
 
  const imageKit = new ImageKit({
-  publicKey: process.env.IMAGEKIT_PUBLIC_KEY as string,
-  privateKey: process.env.IMAGEKIT_PRIVATE_KEY as string,
-  urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT as string,
+  publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY as string,
+  privateKey: import.meta.env.VITE_IMAGEKIT_PRIVATE_KEY as string,
+  urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT as string,
 });
 
   // Mutation to save image to database
