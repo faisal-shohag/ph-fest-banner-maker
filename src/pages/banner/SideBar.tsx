@@ -107,8 +107,15 @@ const SideBar = () => {
   );
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const FloatingContainer = ({ isOpen, activeOption, onClose }) => {
+// props for Floating Container
+interface FloatingContainerProps {
+  isOpen: boolean;
+  activeOption: string | null;
+  onClose?: () => void;
+}
+
+
+const FloatingContainer = ({ isOpen, activeOption }: FloatingContainerProps) => {
   const containerRef = useRef(null);
   const { handleImageFromURL } = useCanvas();
 
