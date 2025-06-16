@@ -1,8 +1,9 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api', // Adjust for production
-  withCredentials: true, // Send cookies with requests
+  baseURL: 'https://ph-banner-maker-server.vercel.app/api',
+  // baseURL: 'http://localhost:5000/api', 
+  withCredentials: true, 
 });
 
 export default api;
