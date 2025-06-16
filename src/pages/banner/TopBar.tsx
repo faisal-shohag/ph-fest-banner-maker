@@ -20,6 +20,7 @@ const TopBar = () => {
   const [editTitle, setEditTitle] = useState(false);
   const [title, setTitle] = useState("Untitled Template");
   const { user } = use(AuthContext) as any
+  const {saveCanvas} = useCanvas()
 
   return (
     <div className="fixed pl-20 dark:bg-zinc-800 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full flex justify-between">
@@ -61,7 +62,7 @@ const TopBar = () => {
         <div className="flex gap-2">
           <ShareModal title={title}/>
 
-           <Button size={'sm'} className="bg-orange-500 text-white">
+           <Button onClick={saveCanvas} size={'sm'} className="bg-orange-500 text-white">
            <Save/> Save
           </Button>
         </div>

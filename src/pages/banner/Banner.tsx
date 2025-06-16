@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import {
-  Canvas,
-  IText,
-} from "fabric";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Canvas } from "fabric";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -38,171 +35,101 @@ import { Slider } from "@/components/ui/slider";
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
 import { useCanvas } from "@/hooks/use-canvas";
+import {fontFamily, textAlignOptions } from "@/lib/constants";
 
 const Banner = () => {
-   const {
-    fabCanvas,
-    openTextOptions,
-    setOpenTextOption,
-    textOptionsApply,
-  } = useCanvas();
+  const { fabCanvas } =
+    useCanvas();
 
 
   useEffect(() => {
     if (!fabCanvas) return;
-    const text = new IText("Hello World", {
-      left: 100,
-      top: 100,
-      fill: "#eeee",
-      fontSize: 20,
-      selectable: true,
+    const savedLocalCanvas: any = localStorage.getItem("savedCanvas");
+    if (!savedLocalCanvas) return;
+
+    fabCanvas.loadFromJSON(JSON.parse(savedLocalCanvas), () => {
+      fabCanvas.renderAll();
+      console.log("Canvas loaded and rendered.");
     });
 
-    fabCanvas.add(text);
-    // fabCanvas.backgroundColor="red"
-   
-    fabCanvas.renderAll();
-
-    // Cleanup
-    return () => {
-      fabCanvas?.dispose();
-    };
+    setTimeout(() => {
+      fabCanvas.renderAll();
+    }, 1000);
   }, [fabCanvas]);
 
+ 
 
-  fabCanvas?.on("mouse:down", (options) => {
-    const target = options.target;
-    //  if(!target) {
-
-    //  }
-    if (target && target.type === "i-text") {
-      if (!openTextOptions) setOpenTextOption(true);
-    } else {
-      if (openTextOptions) setOpenTextOption(false);
-    }
-  });
-
-
-
-fabCanvas?.on("selection:created", (e) => {
-  const selectedObjects = e.selected; // Get all selected objects
-  selectedObjects.forEach((obj) => {
-    obj.set({
-      borderColor: "#3B82F6", // Blue border for selection
-      cornerColor: "#FFF", // White corner handles
-      cornerSize: 8, // Larger corner size for easier grabbing
-      cornerStyle: "circle", // Circular corner handles
-      transparentCorners: false, // Solid corner fills
-      hasControls: true, // Enable resizing/rotating controls
-      borderScaleFactor: 2, // Thicker selection border
-      cornerStrokeColor: "#FFFFFF", // White outline for corners
-      cornerStrokeWidth: 1, // Stroke width for corner outlines
-      shadow: {
-        color: "rgba(0, 0, 0, 0.3)", // Subtle shadow for depth
-        blur: 5,
-        offsetX: 2,
-        offsetY: 2,
-      },
-      hoverCursor: "grab", // Hand cursor on hover
+  fabCanvas?.on("selection:created", (e) => {
+    const selectedObjects = e.selected; // Get all selected objects
+    selectedObjects.forEach((obj) => {
+      obj.set({
+        borderColor: "#3B82F6", // Blue border for selection
+        cornerColor: "#FFF", // White corner handles
+        cornerSize: 8, // Larger corner size for easier grabbing
+        cornerStyle: "circle", // Circular corner handles
+        transparentCorners: false, // Solid corner fills
+        hasControls: true, // Enable resizing/rotating controls
+        borderScaleFactor: 2, // Thicker selection border
+        cornerStrokeColor: "#FFFFFF", // White outline for corners
+        cornerStrokeWidth: 1, // Stroke width for corner outlines
+        shadow: {
+          color: "rgba(0, 0, 0, 0.3)", // Subtle shadow for depth
+          blur: 5,
+          offsetX: 2,
+          offsetY: 2,
+        },
+        hoverCursor: "grab", // Hand cursor on hover
+      });
     });
+    fabCanvas.renderAll(); // Ensure changes are rendered
   });
-  fabCanvas.renderAll(); // Ensure changes are rendered
-});
 
-
-// Update styling when selection is updated
-fabCanvas?.on("selection:updated", (e) => {
-  const selectedObjects = e.selected; // Get all selected objects
-  selectedObjects.forEach((obj) => {
-    obj.set({
-      borderColor: "#3B82F6", // Blue border for selection
-      cornerColor: "#FFF", // White corner handles
-      cornerSize: 8, // Larger corner size for easier grabbing
-      cornerStyle: "circle", // Circular corner handles
-      transparentCorners: false, // Solid corner fills
-      hasControls: true, // Enable resizing/rotating controls
-      borderScaleFactor: 2, // Thicker selection border
-      cornerStrokeColor: "#FFFFFF", // White outline for corners
-      cornerStrokeWidth: 1, // Stroke width for corner outlines
-      shadow: {
-        color: "rgba(0, 0, 0, 0.3)", // Subtle shadow for depth
-        blur: 5,
-        offsetX: 2,
-        offsetY: 2,
-      },
-      hoverCursor: "grab", // Hand cursor on hover
+ 
+  // Update styling when selection is updated
+  fabCanvas?.on("selection:updated", (e) => {
+    const selectedObjects = e.selected; // Get all selected objects
+    selectedObjects.forEach((obj) => {
+      obj.set({
+        borderColor: "#3B82F6", // Blue border for selection
+        cornerColor: "#FFF", // White corner handles
+        cornerSize: 8, // Larger corner size for easier grabbing
+        cornerStyle: "circle", // Circular corner handles
+        transparentCorners: false, // Solid corner fills
+        hasControls: true, // Enable resizing/rotating controls
+        borderScaleFactor: 2, // Thicker selection border
+        cornerStrokeColor: "#FFFFFF", // White outline for corners
+        cornerStrokeWidth: 1, // Stroke width for corner outlines
+        shadow: {
+          color: "rgba(0, 0, 0, 0.3)", // Subtle shadow for depth
+          blur: 5,
+          offsetX: 2,
+          offsetY: 2,
+        },
+        hoverCursor: "grab", // Hand cursor on hover
+      });
     });
+    fabCanvas.renderAll(); // Ensure changes are rendered
   });
-  fabCanvas.renderAll(); // Ensure changes are rendered
-});
 
-// Clear styling when selection is cleared
-fabCanvas?.on("selection:cleared", (e) => {
-  const deselectedObjects = e.deselected || [];
-  deselectedObjects.forEach((obj) => {
-    obj.set({
-      borderColor: null, // Reset border color
-      cornerColor: null, // Reset corner color
-      cornerSize: 6, // Default corner size
-      cornerStyle: "rect", // Default corner style
-      transparentCorners: true, // Default corner transparency
-      borderScaleFactor: 1, // Default border thickness
-      cornerStrokeColor: null, // Reset corner stroke
-      cornerStrokeWidth: 0, // Reset corner stroke width
-      shadow: null, // Remove shadow
-      hoverCursor: "move", // Default cursor
+  // Clear styling when selection is cleared
+  fabCanvas?.on("selection:cleared", (e) => {
+    const deselectedObjects = e.deselected || [];
+    deselectedObjects.forEach((obj) => {
+      obj.set({
+        borderColor: null, // Reset border color
+        cornerColor: null, // Reset corner color
+        cornerSize: 6, // Default corner size
+        cornerStyle: "rect", // Default corner style
+        transparentCorners: true, // Default corner transparency
+        borderScaleFactor: 1, // Default border thickness
+        cornerStrokeColor: null, // Reset corner stroke
+        cornerStrokeWidth: 0, // Reset corner stroke width
+        shadow: null, // Remove shadow
+        hoverCursor: "move", // Default cursor
+      });
     });
+    fabCanvas.renderAll(); // Ensure changes are rendered
   });
-  fabCanvas.renderAll(); // Ensure changes are rendered
-});
-
-
-
-const fontFamily = [
-  { title: "Aladin", family: '"Aladin", cursive', sample: "AaBbzZ" },
-  { title: "আত্মা", family: '"Atma", cursive', sample: "অ আ ক খ" },
-  { title: "বালু ডা ২", family: '"Baloo Da 2", cursive', sample: "অ আ ক খ" },
-  { title: "Bonbon", family: '"Bonbon", cursive', sample: "AaBbzZ" },
-  { title: "Bungee Shade", family: '"Bungee Shade", display', sample: "AaBbzZ" },
-  { title: "Bungee Spice", family: '"Bungee Spice", display', sample: "AaBbzZ" },
-  { title: "Bungee Tint", family: '"Bungee Tint", display', sample: "AaBbzZ" },
-  { title: "DM Serif Text", family: '"DM Serif Text", serif', sample: "AaBbzZ" },
-  { title: "Eater", family: '"Eater", cursive', sample: "AaBbzZ" },
-  { title: "Faster One", family: '"Faster One", cursive', sample: "AaBbzZ" },
-  { title: "গালাডা", family: '"Galada", cursive', sample: "অ আ ক খ" },
-  { title: "হিন্দ শিলিগুড়ি", family: '"Hind Siliguri", sans-serif', sample: "অ আ ক খ" },
-  { title: "Imperial Script", family: '"Imperial Script", cursive', sample: "AaBbzZ" },
-  { title: "Inter", family: '"Inter", sans-serif', sample: "AaBbzZ" },
-  { title: "Jost", family: '"Jost", sans-serif', sample: "AaBbzZ" },
-  { title: "Kalnia Glaze", family: '"Kalnia Glaze", sans-serif', sample: "AaBbzZ" },
-  { title: "কালপুরুষ", family: '"Kalpurush", serif', sample: "অ আ ক খ" }, 
-  { title: "Lato", family: '"Lato", sans-serif', sample: "AaBbzZ" },
-  { title: "Lavishly Yours", family: '"Lavishly Yours", cursive', sample: "AaBbzZ" },
-  { title: "Lexend", family: '"Lexend", sans-serif', sample: "AaBbzZ" },
-  { title: "Londrina Outline", family: '"Londrina Outline", display', sample: "AaBbzZ" },
-  { title: "Lora", family: '"Lora", serif', sample: "AaBbzZ" },
-  { title: "Manrope", family: '"Manrope", sans-serif', sample: "AaBbzZ" },
-  { title: "মিনা", family: '"Mina", sans-serif', sample: "অ আ ক খ" },
-  { title: "Montserrat", family: '"Montserrat", sans-serif', sample: "AaBbzZ" },
-  { title: "Moo Lah Lah", family: '"Moo Lah Lah", cursive', sample: "AaBbzZ" },
-  { title: "Nabla", family: '"Nabla", display', sample: "AaBbzZ" },
-  { title: "Noto Sans Bengali", family: '"নোটো স্যান্স বাংলা", sans-serif', sample: "অ আ ক খ" },
-  { title: "Noto Sans", family: '"Noto Sans", sans-serif', sample: "AaBbzZ" },
-  { title: "নোটো শেরিফ বাংলা", family: '"Noto Serif Bengali", serif', sample: "অ আ ক খ" },
-  { title: "Orbitron", family: '"Orbitron", sans-serif', sample: "AaBbzZ" },
-  { title: "Outfit", family: '"Outfit", sans-serif', sample: "AaBbzZ" },
-  { title: "Roboto", family: '"Roboto", sans-serif', sample: "AaBbzZ" },
-  { title: "Rubik Distressed", family: '"Rubik Distressed", cursive', sample: "AaBbzZ" },
-  { title: "Rubik Gemstones", family: '"Rubik Gemstones", cursive', sample: "AaBbzZ" },
-  { title: "Rubik Glitch", family: '"Rubik Glitch", cursive', sample: "AaBbzZ" },
-  { title: "Rubik Moonrocks", family: '"Rubik Moonrocks", cursive', sample: "AaBbzZ" },
-  { title: "SUSE", family: '"SUSE", sans-serif', sample: "AaBbzZ" },
-  { title: "Tangerine", family: '"Tangerine", cursive', sample: "AaBbzZ" },
-  { title: "তিরো বাংলা", family: '"Tiro Bangla", serif', sample: "অ আ ক খ" },
-  { title: "Titillium Web", family: '"Titillium Web", sans-serif', sample: "AaBbzZ" },
-  { title: "UnifrakturMaguntia", family: '"UnifrakturMaguntia", cursive', sample: "AaBbzZ" },
-  
-];
 
 
   // fabCanvas?.on("mouse:wheel", (opt) => {
@@ -239,81 +166,152 @@ const fontFamily = [
     <div className="flex">
       <TopBar />
       <div>
-        <SideBar/>
+        <SideBar /> 
       </div>
-      
+
+  
+
       <div className="flex-1">
-        <dialog
-          className="z-[9] bg-transparent animate__animated animate__fadeInDown animate__faster  dark:text-white p-3 w-full rounded-xl top-10"
-          open={openTextOptions}
-        >
-          <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
-            <Select
-              onValueChange={(value) => textOptionsApply("fontFamily", value)}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Font Family" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>Font Family</SelectLabel>
-                  {fontFamily.map((font, index) => (
-                    <SelectItem
-                      key={index + 122334}
-                      value={font.family}
-                    >
-                      <div className="flex gap-10 justify-between w-full items-center" style={{ fontFamily: font.family }}>    
-                        {font.title}
-                       
-
-                      </div>
-                  
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              </SelectContent>
-            </Select>
-
-            <Button
-              size={"sm"}
-              variant={"outline"}
-              onClick={() => textOptionsApply("bold")}
-            >
-              <ImBold />
-            </Button>
-            <Button
-              size={"sm"}
-              variant={"outline"}
-              onClick={() => textOptionsApply("italic")}
-            >
-              <Italic />
-            </Button>
-            <Button
-              size={"sm"}
-              variant={"outline"}
-              onClick={() => textOptionsApply("underline")}
-            >
-              <Underline />
-            </Button>
-            <Button
-              size={"sm"}
-              variant={"outline"}
-              onClick={() => textOptionsApply("strike")}
-            >
-              <Strikethrough />
-            </Button>
-            <Input
-              onChange={(e) => {
-                textOptionsApply("fontColor", "", e.target.value);
-              }}
-              className="rounded-lg w-20"
-              type="color"
-              defaultValue={"#000"}
-            />
-          </div>
-        </dialog>
-        <FabCanvas/>
+            <TextEditOption/>
+        <FabCanvas />
       </div>
+    </div>
+  );
+};
+
+const TextEditOption = () => {
+  const { textOptionsApply, fabCanvas, openTextOptions, setOpenTextOption } = useCanvas();
+  const [textAlignIndex, setTextAlignIndex] = useState(0); 
+  const [textAlign, setTextAlign] = useState(textAlignOptions[0]);
+  const [textOptions, setTextOptions] = useState({}) as any; 
+
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        switch (e.key) {
+          case "b":
+            textOptionsApply("bold");
+            break;
+          case "i":
+            textOptionsApply("italic");
+            break;
+          case "u":
+            textOptionsApply("underline");
+            break;
+          case "s":
+            textOptionsApply("strike");
+            break;
+          default:
+            break;
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [textOptionsApply]);
+
+  
+     const handleMouseDown = useCallback((options) => {
+      const target = options.target;
+      if (target && target.type === "textbox") {
+        if (!openTextOptions) setOpenTextOption(true);
+        const textBox:any = target;
+
+        const style:any = !textBox?.styles[0] ? {
+          fontFamily: textBox.fontFamily,
+          fontStyle: textBox.fontStyle,
+          fontWeight: textBox.fontWeight,
+          fontSize: textBox.fontSize,
+          textDecoration: textBox.textDecoration,
+          textAlign: textBox.textAlign,
+          fill: textBox.fill,
+          charSpacing: textBox.charSpacing,
+          lineHeight: textBox.lineHeight,
+          underline: textBox.underline,
+          linethrough: textBox.linethrough,
+          overline: textBox.overline
+        } :  textBox.styles[0][0];
+
+        setTextOptions({...textOptions, ...style});
+        
+      } else {
+        if (openTextOptions) setOpenTextOption(false);
+      }
+    }, [openTextOptions, setOpenTextOption, textOptions]);
+
+
+  useEffect(() => {
+    if (!fabCanvas) return;
+    fabCanvas.on("mouse:down", handleMouseDown);
+    return () => fabCanvas.off("mouse:down", handleMouseDown);
+  }, [handleMouseDown, fabCanvas]);
+
+  const handleTextAlignToggle = () => {
+    const newIndex = (textAlignIndex + 1) % textAlignOptions.length;
+    setTextAlignIndex(newIndex);
+    setTextAlign(textAlignOptions[newIndex]);
+    textOptionsApply(textAlignOptions[newIndex].align);
+  };
+
+  return (
+    <div>
+      <dialog
+        className="z-[9] bg-transparent animate__animated animate__fadeInDown animate__faster dark:text-white p-3 w-full rounded-xl top-10"
+        open={openTextOptions}
+      >
+        <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
+          <Select
+            value={textOptions.fontFamily} // Use controlled value
+            onValueChange={(value) => {
+              setTextOptions((prev) => ({ ...prev, fontFamily: value }));
+              textOptionsApply("fontFamily", value);
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Font Family" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectLabel>Font Family</SelectLabel>
+                {fontFamily.map((font, index) => (
+                  <SelectItem key={index} value={font.family}>
+                    <div
+                      className="flex gap-10 justify-between w-full items-center"
+                      style={{ fontFamily: font.family }}
+                    >
+                      {font.title}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+
+          <button className={`${textOptions.fontWeight ==='bold' ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("bold"); setTextOptions({...textOptions, fontWeight: textOptions.fontWeight === 'normal' ? 'bold': 'normal'})}}>
+            <ImBold />
+          </button>
+         <button className={`${textOptions.fontStyle ==='italic' ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("italic"); setTextOptions({...textOptions, fontStyle: textOptions.fontStyle === 'normal' ? 'italic': 'normal'})}}>
+            <Italic size={18}/>
+          </button>
+             <button className={`${textOptions.underline ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("underline"); setTextOptions({...textOptions, underline: !textOptions.underline})}}>
+            <Underline />
+          </button>
+          <button className={`${textOptions.linethrough ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("strike"); setTextOptions({...textOptions, linethrough: !textOptions.linethrough})}}>
+            <Strikethrough />
+          </button>
+          <Button size="sm" variant="outline" onClick={handleTextAlignToggle}>
+            <textAlign.Icon />
+          </Button>
+          <Input
+            onChange={(e) => textOptionsApply("fontColor", e.target.value)}
+            className="rounded-lg w-20"
+            type="color"
+            defaultValue="#000000"
+          />
+        </div>
+      </dialog>
     </div>
   );
 };
@@ -329,7 +327,7 @@ const FabCanvas = ({
   height = 600,
   bgColor = "#2222",
 }: FabCanvasProps) => {
-     const {
+  const {
     setFabCanvas,
     aspect,
     copy,
@@ -339,7 +337,7 @@ const FabCanvas = ({
     bringFront,
     sendBack,
     handleCanvasBgImage,
-    handleRemoveBg
+    handleRemoveBg,
   } = useCanvas();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -480,7 +478,7 @@ const FabCanvas = ({
         <ContextMenuTrigger>
           <div
             ref={wrapperRef}
-            className="relative overflow-hidden"
+            className="relative"
             style={{
               transform: `scale(${zoom})`,
               transition: isZooming
@@ -504,7 +502,6 @@ const FabCanvas = ({
           >
             <canvas
               className="mx-auto block"
-              // onClick={handleObjectClick}
               ref={canvasRef}
               width={width}
               height={height}
@@ -592,11 +589,10 @@ const FabCanvas = ({
             Set as backgound
           </ContextMenuItem>
 
-           <ContextMenuItem onClick={handleRemoveBg}>
+          <ContextMenuItem onClick={handleRemoveBg}>
             <ImageMinus className="w-4 h-4 mr-2" />
             Remove backgound
           </ContextMenuItem>
-
         </ContextMenuContent>
       </ContextMenu>
 
@@ -685,9 +681,5 @@ const FabCanvas = ({
     </div>
   );
 };
-
-
-
-
 
 export default Banner;

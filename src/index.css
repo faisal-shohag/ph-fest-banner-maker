@@ -1,5 +1,16 @@
 @import url('https://fonts.maateen.me/kalpurush/font.css');
 @import url('https://fonts.googleapis.com/css2?family=Aladin&family=Atma:wght@300;400;500;600;700&family=Baloo+Da+2:wght@400..800&family=Bonbon&family=Bungee+Shade&family=Bungee+Spice&family=Bungee+Tint&family=DM+Serif+Text:ital@0;1&family=Eater&family=Faster+One&family=Galada&family=Hind+Siliguri:wght@300;400;500;600;700&family=Imperial+Script&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Jost:ital,wght@0,100..900;1,100..900&family=Kalnia+Glaze:wght@100..700&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&family=Lavishly+Yours&family=Lexend:wght@100..900&family=Londrina+Outline&family=Lora:ital,wght@0,400..700;1,400..700&family=Manrope:wght@200..800&family=Mina:wght@400;700&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Moo+Lah+Lah&family=Nabla&family=Noto+Sans+Bengali:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif+Bengali:wght@100..900&family=Orbitron:wght@400..900&family=Outfit:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik+Distressed&family=Rubik+Gemstones&family=Rubik+Glitch&family=Rubik+Moonrocks&family=SUSE:wght@100..800&family=Tangerine:wght@400;700&family=Tiro+Bangla:ital@0;1&family=Titillium+Web:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700&family=UnifrakturMaguntia&display=swap');
+@font-face {
+  font-family: 'Li Sweet Shreyam Unicode';
+  src: url('/fonts/LiSweetShreyamUnicode.woff2') format('woff2'),
+      url('/fonts/LiSweetShreyamUnicode.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+
 @import "tailwindcss";
 @import "tw-animate-css";
 @plugin 'tailwind-scrollbar';

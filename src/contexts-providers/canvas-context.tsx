@@ -24,6 +24,7 @@ export interface CanvasContextType {
   handleRemoveBg: () => void;
   addText: () => void;
   exportCanvas: (format:any, title:string) => void;
+  saveCanvas: () => void;
 }
 
 export const CanvasContext = createContext<CanvasContextType | null>(null);

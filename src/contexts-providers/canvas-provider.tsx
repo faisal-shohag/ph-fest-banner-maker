@@ -2,9 +2,9 @@ import { useState, type ReactNode } from "react";
 import {
   Canvas,
   FabricObject,
-  IText,
   FabricImage,
   ActiveSelection,
+  Textbox,
 } from "fabric";
 import { CanvasContext } from "./canvas-context";
 
@@ -35,21 +35,26 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
       });
   };
 
-
   const addText = () => {
     if (!fabCanvas) return;
-    const text = new IText("Add Text Here", {
-      left: fabCanvas.width / 2,
-      top: fabCanvas.height / 2,
-      originX: "center",
-      originY: "center",
-      fill: "#eeee",
-      fontSize: 20,
-      fontFamily: "Inter",
-      selectable: true,
-    });
-    fabCanvas.add(text);
-    fabCanvas.setActiveObject(text);
+    const textBox = new Textbox(
+      "ঈদের অনাবিল আনন্দে ভরে উঠুক প্রতিটি হৃদয়। আপনার জীবনের প্রতিটি দিন ছেয়ে যাক ঈদের খুশিতে।",
+      {
+        width: 200,
+        fontSize: 20,
+        fill: "#eeee",
+        fontFamily: '"Inter", sans-serif',
+        editable: true,
+        left: fabCanvas.width / 2,
+        top: fabCanvas.height / 2,
+        originX: "center",
+        originY: "center",
+      }
+    );
+
+    // fabCanvas.add(text);
+    fabCanvas.add(textBox);
+    // fabCanvas.setActiveObject(text);
     fabCanvas.renderAll();
   };
 
@@ -60,22 +65,22 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
   ) => {
     if (!fabCanvas) return;
     const activeObject = fabCanvas.getActiveObject();
-    if (activeObject instanceof IText) {
-      const iText = activeObject as IText;
-      let selectionStart = iText.selectionStart || 0;
-      let selectionEnd = iText.selectionEnd || 0;
+    if (activeObject instanceof Textbox) {
+      const textBox = activeObject as Textbox;
+      let selectionStart = textBox.selectionStart || 0;
+      let selectionEnd = textBox.selectionEnd || 0;
 
-      
       if (selectionStart === selectionEnd) {
-        selectionStart = 0
-        selectionEnd = iText.text?.length || 0;
+        selectionStart = 0;
+        selectionEnd = textBox.text?.length || 0;
       }
-      const currentStyles = iText.getSelectionStyles(
+
+      const currentStyles = textBox.getSelectionStyles(
         selectionStart,
         selectionEnd
       );
-
       const newStyle: any = {};
+
       switch (option) {
         case "bold":
           newStyle.fontWeight = currentStyles.every(
@@ -105,10 +110,31 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
         case "fontFamily":
           if (fontFamily) newStyle.fontFamily = fontFamily;
           break;
+        case "alignLeft":
+          textBox.set("textAlign", "left");
+          break;
+        case "alignCenter":
+          textBox.set("textAlign", "center");
+          break;
+        case "alignRight":
+          textBox.set("textAlign", "right");
+          break;
+        case "alignJustify":
+          textBox.set("textAlign", "justify");
+          break;
         default:
           break;
       }
-      iText.setSelectionStyles(newStyle, selectionStart, selectionEnd);
+
+      if (Object.keys(newStyle).length > 0) {
+        textBox.setSelectionStyles(newStyle, selectionStart, selectionEnd);
+        textBox.initDimensions();
+        textBox.setCoords();
+        textBox._clearCache()
+        textBox.dirty = true
+        fabCanvas.renderAll();
+      }
+
       fabCanvas.renderAll();
     }
   };
@@ -222,32 +248,32 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
         crossOrigin: "anonymous",
       })
         .then((img: FabricImage) => {
-        const canvasWidth = fabCanvas.getWidth();
-        const canvasHeight = fabCanvas.getHeight();
-        const imgAspect = img.width / img.height;
-        const canvasAspect = canvasWidth / canvasHeight;
+          const canvasWidth = fabCanvas.getWidth();
+          const canvasHeight = fabCanvas.getHeight();
+          const imgAspect = img.width / img.height;
+          const canvasAspect = canvasWidth / canvasHeight;
 
-        let scale = 1;
-        if (imgAspect > canvasAspect) {
-          // Image is wider than canvas, scale to height
-          scale = canvasHeight / img.height;
-        } else {
-          // Image is taller than canvas, scale to width
-          scale = canvasWidth / img.width;
-        }
+          let scale = 1;
+          if (imgAspect > canvasAspect) {
+            // Image is wider than canvas, scale to height
+            scale = canvasHeight / img.height;
+          } else {
+            // Image is taller than canvas, scale to width
+            scale = canvasWidth / img.width;
+          }
 
-        img.set({
-          left: 0,
-          top: 0,
-          originX: 'left',
-          originY: 'top',
-          scaleX: scale,
-          scaleY: scale,
-          selectable: false,
-        });
+          img.set({
+            left: 0,
+            top: 0,
+            originX: "left",
+            originY: "top",
+            scaleX: scale,
+            scaleY: scale,
+            selectable: false,
+          });
 
           fabCanvas.backgroundImage = img;
-          deleteObject()
+          deleteObject();
           fabCanvas.renderAll();
         })
         .catch((error) => {
@@ -268,28 +294,32 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     setAspect(w / h);
   };
 
-const exportCanvas = (format, title: string) => {
-  try {
-    // Try using Fabric.js toDataURL directly (sometimes works better)
-    console.log(fabCanvas?.height)
-    console.log(fabCanvas?.width)
-    const dataURL = fabCanvas?.toDataURL({
-      format,
-      quality: 1,
-      multiplier: 2,
-    });
-    const link:any = document.createElement("a");
-    link.href = dataURL;
-    link.download = `${title}.${format}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  } catch (e) {
-    console.error("Export failed:", e);
-  }
-};
+  const exportCanvas = (format, title: string) => {
+    try {
+      // Try using Fabric.js toDataURL directly (sometimes works better)
+      console.log(fabCanvas?.height);
+      console.log(fabCanvas?.width);
+      const dataURL = fabCanvas?.toDataURL({
+        format,
+        quality: 1,
+        multiplier: 2,
+      });
+      const link: any = document.createElement("a");
+      link.href = dataURL;
+      link.download = `${title}.${format}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      console.error("Export failed:", e);
+    }
+  };
 
-
+  const saveCanvas = () => {
+    if (!fabCanvas) return;
+    const dataJSON = fabCanvas.toJSON();
+    localStorage.setItem("savedCanvas", JSON.stringify(dataJSON));
+  };
 
   // useEffect(() => {
   //     if (!fabCanvas) return;
@@ -312,7 +342,6 @@ const exportCanvas = (format, title: string) => {
   //     };
   //   }, [fabCanvas])
 
-
   const value = {
     fabCanvas,
     setFabCanvas,
@@ -332,6 +361,7 @@ const exportCanvas = (format, title: string) => {
     handleRemoveBg,
     addText,
     exportCanvas,
+    saveCanvas,
   };
 
   return <CanvasContext value={value}>{children}</CanvasContext>;
