@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Canvas } from "fabric";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -36,6 +36,7 @@ import TopBar from "./TopBar";
 import SideBar from "./SideBar";
 import { useCanvas } from "@/hooks/use-canvas";
 import {fontFamily, textAlignOptions } from "@/lib/constants";
+import { debounce } from "lodash";
 
 const Banner = () => {
   const { fabCanvas } =
@@ -183,77 +184,229 @@ const TextEditOption = () => {
   const { textOptionsApply, fabCanvas, openTextOptions, setOpenTextOption } = useCanvas();
   const [textAlignIndex, setTextAlignIndex] = useState(0); 
   const [textAlign, setTextAlign] = useState(textAlignOptions[0]);
-  const [textOptions, setTextOptions] = useState({}) as any; 
+  const [textOptions, setTextOptions] = useState({
+    fontFamily: '',
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+    underline: false,
+    linethrough: false,
+    fill: '#000000',
+    textAlign: 'left'
+  });
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey) {
-        e.preventDefault();
-        switch (e.key) {
-          case "b":
-            textOptionsApply("bold");
-            break;
-          case "i":
-            textOptionsApply("italic");
-            break;
-          case "u":
-            textOptionsApply("underline");
-            break;
-          case "s":
-            textOptionsApply("strike");
-            break;
-          default:
-            break;
-        }
-      }
+  // Debounced state update to prevent excessive re-renders
+  const debouncedUpdateState = useMemo(
+    () => debounce((styles) => {
+      setTextOptions(prev => ({ ...prev, ...styles }));
+    }, 50),
+    []
+  );
+
+  // Memoized function to get current text styles
+  const getCurrentTextStyles = useCallback(() => {
+    if (!fabCanvas) return null;
+    
+    const activeObject = fabCanvas.getActiveObject();
+    if (!activeObject || activeObject.type !== "textbox") return null;
+    
+    const textBox:any = activeObject;
+    let selectionStart = textBox.selectionStart ?? 0;
+    let selectionEnd = textBox.selectionEnd ?? textBox.text?.length ?? 0;
+    
+    // If no selection, get styles from first character or textbox defaults
+    if (selectionStart === selectionEnd) {
+      selectionStart = 0;
+      selectionEnd = Math.min(1, textBox.text?.length ?? 0);
+    }
+    
+    const selectionStyles = textBox.getSelectionStyles(selectionStart, selectionEnd);
+    const firstCharStyle = selectionStyles[0] || {};
+    
+    return {
+      fontFamily: firstCharStyle.fontFamily || textBox.fontFamily || '',
+      fontWeight: firstCharStyle.fontWeight || textBox.fontWeight || 'normal',
+      fontStyle: firstCharStyle.fontStyle || textBox.fontStyle || 'normal',
+      underline: Boolean(firstCharStyle.underline || textBox.underline),
+      linethrough: Boolean(firstCharStyle.linethrough || textBox.linethrough),
+      fill: firstCharStyle.fill || textBox.fill || '#000000',
+      textAlign: textBox.textAlign || 'left'
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [textOptionsApply]);
+  }, [fabCanvas]);
 
-  
-     const handleMouseDown = useCallback((options) => {
-      const target = options.target;
-      if (target && target.type === "textbox") {
-        if (!openTextOptions) setOpenTextOption(true);
-        const textBox:any = target;
-
-        const style:any = !textBox?.styles[0] ? {
-          fontFamily: textBox.fontFamily,
-          fontStyle: textBox.fontStyle,
-          fontWeight: textBox.fontWeight,
-          fontSize: textBox.fontSize,
-          textDecoration: textBox.textDecoration,
-          textAlign: textBox.textAlign,
-          fill: textBox.fill,
-          charSpacing: textBox.charSpacing,
-          lineHeight: textBox.lineHeight,
-          underline: textBox.underline,
-          linethrough: textBox.linethrough,
-          overline: textBox.overline
-        } :  textBox.styles[0][0];
-
-        setTextOptions({...textOptions, ...style});
-        
-      } else {
-        if (openTextOptions) setOpenTextOption(false);
+  // Optimized function to update text options state
+  const updateTextOptionsState = useCallback(() => {
+    const styles = getCurrentTextStyles();
+    if (styles) {
+      // Only update if styles have actually changed
+      const hasChanged = Object.keys(styles).some(key => 
+        textOptions[key] !== styles[key]
+      );
+      
+      if (hasChanged) {
+        debouncedUpdateState(styles);
       }
-    }, [openTextOptions, setOpenTextOption, textOptions]);
+    }
+  }, [getCurrentTextStyles, textOptions, debouncedUpdateState]);
 
+  // Enhanced text option application with state sync
+  const applyTextOption = useCallback((option, value?:any) => {
+    textOptionsApply(option, value);
+    
+    // Update state immediately for UI responsiveness
+    switch (option) {
+      case 'bold':
+        setTextOptions(prev => ({
+          ...prev,
+          fontWeight: prev.fontWeight === 'bold' ? 'normal' : 'bold'
+        }));
+        break;
+      case 'italic':
+        setTextOptions(prev => ({
+          ...prev,
+          fontStyle: prev.fontStyle === 'italic' ? 'normal' : 'italic'
+        }));
+        break;
+      case 'underline':
+        setTextOptions(prev => ({
+          ...prev,
+          underline: !prev.underline
+        }));
+        break;
+      case 'strike':
+        setTextOptions(prev => ({
+          ...prev,
+          linethrough: !prev.linethrough
+        }));
+        break;
+      case 'fontFamily':
+        setTextOptions(prev => ({
+          ...prev,
+          fontFamily: value
+        }));
+        break;
+      case 'fontColor':
+        setTextOptions(prev => ({
+          ...prev,
+          fill: value
+        }));
+        break;
+    }
+    
+    // Verify state after fabric.js updates
+    setTimeout(updateTextOptionsState, 10);
+  }, [textOptionsApply, updateTextOptionsState]);
 
+  // Keyboard shortcuts with preventDefault
+  const handleKeyDown = useCallback((e) => {
+    if (!openTextOptions || !e.ctrlKey) return;
+    
+    const shortcuts = {
+      'b': 'bold',
+      'i': 'italic', 
+      'u': 'underline',
+      's': 'strike'
+    };
+    
+    const action = shortcuts[e.key.toLowerCase()];
+    if (action) {
+      e.preventDefault();
+      e.stopPropagation();
+      applyTextOption(action);
+    }
+  }, [openTextOptions, applyTextOption]);
+
+  // Optimized mouse down handler
+  const handleMouseDown = useCallback((e) => {
+    const target = e.target;
+    const isTextbox = target && target.type === "textbox";
+    
+    if (isTextbox) {
+      if (!openTextOptions) {
+        setOpenTextOption(true);
+      }
+      // Use requestAnimationFrame for smooth updates
+      requestAnimationFrame(() => {
+        updateTextOptionsState();
+      });
+    } else if (openTextOptions) {
+      setOpenTextOption(false);
+    }
+  }, [openTextOptions, setOpenTextOption, updateTextOptionsState]);
+
+  // Selection change handler
+  const handleSelectionChanged = useCallback(() => {
+    if (openTextOptions) {
+      requestAnimationFrame(updateTextOptionsState);
+    }
+  }, [openTextOptions, updateTextOptionsState]);
+
+  // Text alignment toggle
+  const handleTextAlignToggle = useCallback(() => {
+    const newIndex = (textAlignIndex + 1) % textAlignOptions.length;
+    const newAlign = textAlignOptions[newIndex];
+    
+    setTextAlignIndex(newIndex);
+    setTextAlign(newAlign);
+    
+    textOptionsApply(newAlign.align);
+    setTextOptions(prev => ({ ...prev, textAlign: newAlign.align }));
+  }, [textAlignIndex, textOptionsApply]);
+
+  // Font family change handler
+  const handleFontFamilyChange = useCallback((value) => {
+    applyTextOption("fontFamily", value);
+  }, [applyTextOption]);
+
+  // Color change handler
+  const handleColorChange = useCallback((e) => {
+    const color = e.target.value;
+    applyTextOption("fontColor", color);
+  }, [applyTextOption]);
+
+  // Event listeners setup
   useEffect(() => {
     if (!fabCanvas) return;
-    fabCanvas.on("mouse:down", handleMouseDown);
-    return () => fabCanvas.off("mouse:down", handleMouseDown);
-  }, [handleMouseDown, fabCanvas]);
+    
+    const events = [
+      ['mouse:down', handleMouseDown],
+      ['selection:changed', handleSelectionChanged],
+      ['text:selection:changed', handleSelectionChanged],
+      ['text:changed', handleSelectionChanged]
+    ];
+    
+    events.forEach(([event, handler] : any) => {
+      fabCanvas.on(event, handler);
+    });
+    
+    return () => {
+      events.forEach(([event, handler] : any) => {
+        fabCanvas.off(event, handler);
+      });
+    };
+  }, [fabCanvas, handleMouseDown, handleSelectionChanged]);
 
-  const handleTextAlignToggle = () => {
-    const newIndex = (textAlignIndex + 1) % textAlignOptions.length;
-    setTextAlignIndex(newIndex);
-    setTextAlign(textAlignOptions[newIndex]);
-    textOptionsApply(textAlignOptions[newIndex].align);
-  };
+  // Keyboard event listeners
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
+
+  // Cleanup debounced function
+  useEffect(() => {
+    return () => {
+      debouncedUpdateState.cancel();
+    };
+  }, [debouncedUpdateState]);
+
+  // Memoized button classes for performance
+  const getButtonClass = useCallback((isActive) => 
+    `${isActive ? 'bg-pink-600 text-white' : 'hover:bg-pink-600'} 
+     border hover:bg-pink-600 dark:text-white px-3 rounded-lg 
+     transition-colors duration-150 flex items-center justify-center`,
+    []
+  );
+
+  if (!openTextOptions) return null;
 
   return (
     <div>
@@ -262,12 +415,11 @@ const TextEditOption = () => {
         open={openTextOptions}
       >
         <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
+          
+          {/* Font Family Selector */}
           <Select
-            value={textOptions.fontFamily} // Use controlled value
-            onValueChange={(value) => {
-              setTextOptions((prev) => ({ ...prev, fontFamily: value }));
-              textOptionsApply("fontFamily", value);
-            }}
+            value={textOptions.fontFamily}
+            onValueChange={handleFontFamilyChange}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Font Family" />
@@ -275,8 +427,8 @@ const TextEditOption = () => {
             <SelectContent>
               <SelectGroup>
                 <SelectLabel>Font Family</SelectLabel>
-                {fontFamily.map((font, index) => (
-                  <SelectItem key={index} value={font.family}>
+                {fontFamily.map((font) => (
+                  <SelectItem key={font.family} value={font.family}>
                     <div
                       className="flex gap-10 justify-between w-full items-center"
                       style={{ fontFamily: font.family }}
@@ -289,32 +441,71 @@ const TextEditOption = () => {
             </SelectContent>
           </Select>
 
-          <button className={`${textOptions.fontWeight ==='bold' ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("bold"); setTextOptions({...textOptions, fontWeight: textOptions.fontWeight === 'normal' ? 'bold': 'normal'})}}>
+          {/* Bold Button */}
+          <button 
+            className={getButtonClass(textOptions.fontWeight === 'bold')}
+            onClick={() => applyTextOption("bold")}
+            title="Bold (Ctrl+B)"
+            type="button"
+          >
             <ImBold />
           </button>
-         <button className={`${textOptions.fontStyle ==='italic' ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("italic"); setTextOptions({...textOptions, fontStyle: textOptions.fontStyle === 'normal' ? 'italic': 'normal'})}}>
-            <Italic size={18}/>
+          
+          {/* Italic Button */}
+          <button 
+            className={getButtonClass(textOptions.fontStyle === 'italic')}
+            onClick={() => applyTextOption("italic")}
+            title="Italic (Ctrl+I)"
+            type="button"
+          >
+            <Italic size={18} />
           </button>
-             <button className={`${textOptions.underline ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("underline"); setTextOptions({...textOptions, underline: !textOptions.underline})}}>
+          
+          {/* Underline Button */}
+          <button 
+            className={getButtonClass(textOptions.underline)}
+            onClick={() => applyTextOption("underline")}
+            title="Underline (Ctrl+U)"
+            type="button"
+          >
             <Underline />
           </button>
-          <button className={`${textOptions.linethrough ? 'bg-pink-600' : ' hover:bg-pink-600 '} border hover:bg-pink-600 dark:text-white px-3  rounded-lg`} onClick={() => {textOptionsApply("strike"); setTextOptions({...textOptions, linethrough: !textOptions.linethrough})}}>
+          
+          {/* Strikethrough Button */}
+          <button 
+            className={getButtonClass(textOptions.linethrough)}
+            onClick={() => applyTextOption("strike")}
+            title="Strikethrough (Ctrl+S)"
+            type="button"
+          >
             <Strikethrough />
           </button>
-          <Button size="sm" variant="outline" onClick={handleTextAlignToggle}>
+          
+          {/* Text Alignment Button */}
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={handleTextAlignToggle}
+            title="Text Alignment"
+            type="button"
+          >
             <textAlign.Icon />
           </Button>
+          
+          {/* Color Picker */}
           <Input
-            onChange={(e) => textOptionsApply("fontColor", e.target.value)}
-            className="rounded-lg w-20"
+            onChange={handleColorChange}
+            className="rounded-lg w-20 h-9"
             type="color"
-            defaultValue="#000000"
+            value={textOptions.fill}
+            title="Text Color"
           />
         </div>
       </dialog>
     </div>
   );
 };
+
 
 type FabCanvasProps = {
   width?: number;

@@ -58,86 +58,100 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     fabCanvas.renderAll();
   };
 
-  const textOptionsApply = (
-    option: string,
-    fontFamily?: string,
-    fontColor?: string
-  ) => {
-    if (!fabCanvas) return;
-    const activeObject = fabCanvas.getActiveObject();
-    if (activeObject instanceof Textbox) {
-      const textBox = activeObject as Textbox;
-      let selectionStart = textBox.selectionStart || 0;
-      let selectionEnd = textBox.selectionEnd || 0;
+const textOptionsApply = (
+  option: string,
+  fontFamily?: string,
+  fontColor?: string
+) => {
+  if (!fabCanvas) return;
+  const activeObject = fabCanvas.getActiveObject();
+  if (!(activeObject instanceof Textbox)) return;
 
-      if (selectionStart === selectionEnd) {
-        selectionStart = 0;
-        selectionEnd = textBox.text?.length || 0;
-      }
+  const textBox = activeObject as Textbox;
 
-      const currentStyles = textBox.getSelectionStyles(
-        selectionStart,
-        selectionEnd
-      );
-      const newStyle: any = {};
+  // Ensure the Textbox is fully active
+  fabCanvas.setActiveObject(textBox);
+  
+  // Get selection or default to entire text
+  let selectionStart = textBox.selectionStart ?? 0;
+  let selectionEnd = textBox.selectionEnd ?? textBox.text?.length ?? 0;
 
-      switch (option) {
-        case "bold":
-          newStyle.fontWeight = currentStyles.every(
-            (style) => style.fontWeight === "bold"
-          )
-            ? "normal"
-            : "bold";
-          break;
-        case "italic":
-          newStyle.fontStyle = currentStyles.every(
-            (style) => style.fontStyle === "italic"
-          )
-            ? "normal"
-            : "italic";
-          break;
-        case "underline":
-          newStyle.underline = !currentStyles.every((style) => style.underline);
-          break;
-        case "strike":
-          newStyle.linethrough = !currentStyles.every(
-            (style) => style.linethrough
-          );
-          break;
-        case "fontColor":
-          if (fontColor) newStyle.fill = fontColor;
-          break;
-        case "fontFamily":
-          if (fontFamily) newStyle.fontFamily = fontFamily;
-          break;
-        case "alignLeft":
-          textBox.set("textAlign", "left");
-          break;
-        case "alignCenter":
-          textBox.set("textAlign", "center");
-          break;
-        case "alignRight":
-          textBox.set("textAlign", "right");
-          break;
-        case "alignJustify":
-          textBox.set("textAlign", "justify");
-          break;
-        default:
-          break;
-      }
+  // If no selection, select all text
+  if (selectionStart === selectionEnd) {
+    selectionStart = 0;
+    selectionEnd = textBox.text?.length ?? 0;
+    textBox.setSelectionStart(selectionStart);
+    textBox.setSelectionEnd(selectionEnd);
+  }
 
-      if (Object.keys(newStyle).length > 0) {
-        textBox.setSelectionStyles(newStyle, selectionStart, selectionEnd);
-        textBox.initDimensions();
-        textBox.setCoords();
-        textBox._clearCache()
-        textBox.dirty = true
-        fabCanvas.renderAll();
-      }
+  const currentStyles = textBox.getSelectionStyles(selectionStart, selectionEnd);
+  const newStyle: any = {};
 
-      fabCanvas.renderAll();
+  // Helper function to check if all characters have a specific style
+  // const hasStyle = (styleProp: string, value: any) => {
+  //   if (currentStyles.length === 0) {
+  //     // If no styles, check the textbox property
+  //     return textBox[styleProp] === value;
+  //   }
+  //   return currentStyles.every((style) => style[styleProp] === value);
+  // };
+
+  // Helper function to get current style value
+  const getCurrentStyleValue = (styleProp: string) => {
+    if (currentStyles.length === 0) {
+      return textBox[styleProp];
     }
+    return currentStyles[0]?.[styleProp] || textBox[styleProp];
   };
+
+  switch (option) {
+    case "bold":
+      newStyle.fontWeight = getCurrentStyleValue('fontWeight') === "bold" ? "normal" : "bold";
+      break;
+    case "italic":
+      newStyle.fontStyle = getCurrentStyleValue('fontStyle') === "italic" ? "normal" : "italic";
+      break;
+    case "underline":
+
+      newStyle.underline = !getCurrentStyleValue('underline');
+      break;
+    case "strike":
+
+      newStyle.linethrough = !getCurrentStyleValue('linethrough');
+      break;
+    case "fontColor":
+      if (fontColor) newStyle.fill = fontColor;
+      break;
+    case "fontFamily":
+      if (fontFamily) newStyle.fontFamily = fontFamily;
+      break;
+    case "alignLeft":
+      textBox.set("textAlign", "left");
+      break;
+    case "alignCenter":
+      textBox.set("textAlign", "center");
+      break;
+    case "alignRight":
+      textBox.set("textAlign", "right");
+      break;
+    case "alignJustify":
+      textBox.set("textAlign", "justify");
+      break;
+    default:
+      break;
+  }
+
+  if (Object.keys(newStyle).length > 0) {
+    textBox.setSelectionStyles(newStyle, selectionStart, selectionEnd);
+    textBox.initDimensions();
+    textBox.setCoords();
+    textBox._clearCache();
+    textBox.dirty = true;
+    fabCanvas.requestRenderAll();
+  }
+
+  fabCanvas.renderAll();
+};
 
   const copy = () => {
     if (!fabCanvas) return;
