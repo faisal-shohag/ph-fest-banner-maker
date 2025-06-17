@@ -35,7 +35,7 @@ import { Slider } from "@/components/ui/slider";
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
 import { useCanvas } from "@/hooks/use-canvas";
-import {fontFamily, textAlignOptions } from "@/lib/constants";
+import {fontFamily, fontSizes, textAlignOptions } from "@/lib/constants";
 import { debounce } from "lodash";
 
 const Banner = () => {
@@ -49,6 +49,7 @@ const Banner = () => {
     if (!savedLocalCanvas) return;
 
     fabCanvas.loadFromJSON(JSON.parse(savedLocalCanvas), () => {
+    
       fabCanvas.renderAll();
       console.log("Canvas loaded and rendered.");
     });
@@ -191,7 +192,8 @@ const TextEditOption = () => {
     underline: false,
     linethrough: false,
     fill: '#000000',
-    textAlign: 'left'
+    textAlign: 'left',
+    fontSize: 16,
   });
 
   // Debounced state update to prevent excessive re-renders
@@ -414,7 +416,7 @@ const TextEditOption = () => {
         className="z-[9] bg-transparent animate__animated animate__fadeInDown animate__faster dark:text-white p-3 w-full rounded-xl top-10"
         open={openTextOptions}
       >
-        <div className="dark:bg-zinc-800 max-w-lg mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
+        <div className="dark:bg-zinc-800 max-w-2xl mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white">
           
           {/* Font Family Selector */}
           <Select
@@ -440,6 +442,25 @@ const TextEditOption = () => {
               </SelectGroup>
             </SelectContent>
           </Select>
+
+          <Select
+  value={textOptions.fontSize.toString()}
+  onValueChange={(value) => setTextOptions({ ...textOptions, fontSize: parseInt(value) })}
+>
+  <SelectTrigger className="w-[180px]">
+    <SelectValue placeholder="Font Size" />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectGroup>
+      <SelectLabel>Font Size</SelectLabel>
+      {fontSizes.map((size) => (
+        <SelectItem key={size} value={size.toString()}>
+          <div className="w-full text-left">{size}px</div>
+        </SelectItem>
+      ))}
+    </SelectGroup>
+  </SelectContent>
+</Select>
 
           {/* Bold Button */}
           <button 
@@ -529,6 +550,7 @@ const FabCanvas = ({
     sendBack,
     handleCanvasBgImage,
     handleRemoveBg,
+  
   } = useCanvas();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
