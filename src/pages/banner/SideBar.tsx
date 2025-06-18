@@ -42,6 +42,10 @@ const SideBar = () => {
       />     
       <div className="z-[9999] dark:bg-zinc-900 bg-zinc-100 py-5 flex flex-col gap-5 min-w-[75px] max-w-[200px] justify-between">
         <div className="flex flex-col gap-10 pt-20">
+
+          <div className="absolute top-3 left-5">
+            <img className="h-10" src="/icons/splash.png" alt="logo"/>
+          </div>
           <div 
             className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded-2xl ${
               activeOption === 'Design' 
@@ -138,13 +142,14 @@ const FloatingContainer = ({ isOpen, activeOption }: FloatingContainerProps) => 
     <div className="z-50">
       <div 
         ref={containerRef}
-        className={`fixed top-15 overflow-y-auto  left-20 !z-[999999999999999] h-[90%] p-5 rounded-xl border dark:bg-zinc-900 bg-white
+        className={`fixed top-15 overflow-y-auto  left-20 z-50 h-[90%] p-5 rounded-xl border dark:bg-zinc-900 bg-white
           transition-all duration-500 ease-in-out transform-gpu
           ${isOpen && activeOption
             ? 'w-[350px] opacity-100 translate-x-0' 
             : 'w-0 opacity-0 -translate-x-full overflow-hidden pointer-events-none'
           }`}
       >
+     
         <div className={`transition-opacity duration-300 delay-100 ${isOpen && activeOption ? 'opacity-100' : 'opacity-0'}`}>
           {isOpen && activeOption && renderContent()}
         </div>

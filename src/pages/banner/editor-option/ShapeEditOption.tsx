@@ -172,9 +172,7 @@ const angle = parseFloat(value) || 0;
     (e) => {
       const target = e.target;
       const isShape = target && 
-        target.type !== "textbox" && 
-        target.type !== "text" && 
-        target.type !== undefined;
+        shapeTypes.includes(target.type);
 
       if (isShape) {
         if (!openShapeOptions) {

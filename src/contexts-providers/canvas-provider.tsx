@@ -613,6 +613,8 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
   //     };
   //   }, [fabCanvas])
 
+
+
   const value = {
     fabCanvas,
     setFabCanvas,
