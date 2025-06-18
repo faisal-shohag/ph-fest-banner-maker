@@ -5,6 +5,14 @@ import {
   FabricImage,
   ActiveSelection,
   Textbox,
+  Rect,
+  Circle,
+  Triangle,
+  Line,
+  Group,
+  Ellipse,
+  Polygon,
+  Path,
 } from "fabric";
 import { CanvasContext } from "./canvas-context";
 
@@ -12,7 +20,10 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
   const [fabCanvas, setFabCanvas] = useState<Canvas | null>(null);
   const [clipboard, setClipboard] = useState<FabricObject | null>(null);
   const [openTextOptions, setOpenTextOption] = useState(false);
+  const [openShapeOptions, setOpenShapeOptions] = useState(false);
   const [aspect, setAspect] = useState(1 / 1);
+  const [isActive, setIsActive] = useState(false);
+  const [opacity, setOpacity] = useState(1);
 
   const handleImageFromURL = async (imageUrl: string) => {
     if (!fabCanvas || !imageUrl) return;
@@ -28,6 +39,8 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
         });
         fabCanvas.add(img);
         fabCanvas.setActiveObject(img);
+        setIsActive(true);
+        setOpacity(1);
         fabCanvas.renderAll();
       })
       .catch((error) => {
@@ -155,6 +168,215 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     fabCanvas.renderAll();
   };
 
+ const addShape = (shapeType, options = {}) => {
+  if (!fabCanvas) return;
+
+  // Default options
+  const defaultOptions = {
+    left: fabCanvas.width / 2,
+    top: fabCanvas.height / 2,
+    fill: "#3f9fff", // Fixed hex color
+    stroke: "#3f9fff",
+    strokeWidth: 2,
+    rx: 10,
+    ry: 10,
+    selectable: true,
+    evented: true,
+  };
+
+  // Merge provided options with defaults
+  const shapeOptions:any = { ...defaultOptions, ...options };
+  let shape;
+
+   
+      
+
+  switch (shapeType.toLowerCase()) {
+    case "rect":
+    case "rectangle":
+      shape = new Rect({
+        width: shapeOptions.width || 100,
+        height: shapeOptions.height || 100,
+        ...shapeOptions,
+      });
+      break;
+
+    case "circle":
+      shape = new Circle({
+        radius: shapeOptions.radius || 50,
+        ...shapeOptions,
+      });
+      break;
+
+    case "triangle":
+      shape = new Triangle({
+        width: shapeOptions.width || 100,
+        height: shapeOptions.height || 100,
+        ...shapeOptions,
+      });
+      break;
+
+    case "line":
+      shape = new Line(
+        [
+          shapeOptions.x1 || 0,
+          shapeOptions.y1 || 0,
+          shapeOptions.x2 || 100,
+          shapeOptions.y2 || 100,
+        ],
+        {
+          stroke: shapeOptions.stroke,
+          strokeWidth: shapeOptions.strokeWidth,
+          ...shapeOptions,
+          fill: null, // Lines don't have fill
+        }
+      );
+      break;
+
+    case "arrow":{
+
+     const arrowLength = shapeOptions.length || 100;
+      const arrowHeadSize = shapeOptions.arrowHeadSize || 15;
+      const strokeWidth = shapeOptions.strokeWidth || 2;
+      
+      // Create arrow shaft (line)
+      const shaft = new Line([0, 8, arrowLength - arrowHeadSize, 8], {
+        stroke: shapeOptions.stroke,
+        strokeWidth: strokeWidth,
+        originX: 'left',
+        originY: 'center'
+      });
+      
+      // Create arrowhead (triangle)
+      const arrowHead = new Triangle({
+        width: arrowHeadSize,
+        height: arrowHeadSize,
+        fill: shapeOptions.stroke,
+        left: arrowLength - arrowHeadSize,
+        top: 0,
+        originX: 'left',
+        originY: 'center',
+        angle: 90
+      });
+    
+      // Group shaft and arrowhead
+      shape = new Group([shaft, arrowHead], {
+        ...shapeOptions,
+        fill: null // Group fill handled by individual objects
+      });
+      break;
+    }
+      
+
+    case "ellipse":
+    case "oval":
+      shape = new Ellipse({
+        rx: shapeOptions.rx || shapeOptions.width / 2 || 60,
+        ry: shapeOptions.ry || shapeOptions.height / 2 || 40,
+        ...shapeOptions,
+      });
+      break;
+
+    case "polygon":
+    case "hexagon": {
+      const sides = shapeOptions.sides || 6;
+      const radius = shapeOptions.radius || 50;
+      const polygonPoints:any = [];
+      
+      for (let i = 0; i < sides; i++) {
+        const angle = (i * 2 * Math.PI) / sides;
+        polygonPoints.push({
+          x: radius * Math.cos(angle),
+          y: radius * Math.sin(angle)
+        });
+      }
+      
+      shape = new Polygon(polygonPoints, {
+        ...shapeOptions,
+      });
+    }
+      break;
+
+    case "star": {
+      const outerRadius = shapeOptions.outerRadius || 50;
+      const innerRadius = shapeOptions.innerRadius || 25;
+      const points = shapeOptions.points || 5;
+      const starPoints:any = [];
+      
+      for (let i = 0; i < points * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (i * Math.PI) / points;
+        starPoints.push({
+          x: radius * Math.cos(angle - Math.PI / 2),
+          y: radius * Math.sin(angle - Math.PI / 2)
+        });
+      }
+      
+      shape = new Polygon(starPoints, {
+        ...shapeOptions,
+      });
+      break;
+    }
+
+    case "diamond":
+    case "rhombus": {
+      const size = shapeOptions.size || 50;
+      const diamondPoints = [
+        { x: 0, y: -size },      // top
+        { x: size, y: 0 },       // right
+        { x: 0, y: size },       // bottom
+        { x: -size, y: 0 }       // left
+      ];
+      
+      shape = new Polygon(diamondPoints, {
+        ...shapeOptions,
+      });
+    }
+      break;
+
+    case "pentagon":
+      shape = addShape("polygon", { ...shapeOptions, sides: 5 });
+      return; // Early return to avoid duplicate processing
+
+    case "octagon":
+      shape = addShape("polygon", { ...shapeOptions, sides: 8 });
+      return; // Early return to avoid duplicate processing
+
+    case "heart": {
+      const heartSize = shapeOptions.size || 50;
+      const heartPath = `M ${heartSize},${heartSize * 0.3} 
+        C ${heartSize},${heartSize * 0.1} ${heartSize * 0.7},${-heartSize * 0.1} ${heartSize * 0.5},${heartSize * 0.1}
+        C ${heartSize * 0.3},${-heartSize * 0.1} 0,${heartSize * 0.1} 0,${heartSize * 0.3}
+        C 0,${heartSize * 0.5} ${heartSize * 0.5},${heartSize * 0.9} ${heartSize * 0.5},${heartSize * 0.9}
+        C ${heartSize * 0.5},${heartSize * 0.9} ${heartSize},${heartSize * 0.5} ${heartSize},${heartSize * 0.3} Z`;
+      
+      shape = new Path(heartPath, {
+        ...shapeOptions,
+        scaleX: 1,
+        scaleY: 1
+      });
+      break;
+    }
+    default:
+      console.warn(`Unsupported shape type: ${shapeType}`);
+      return;
+  }
+
+  if (!shape) return;
+
+  // Add shape to canvas
+  fabCanvas.add(shape);
+
+  // Set as active object
+  fabCanvas.setActiveObject(shape);
+
+  // Update canvas
+  shape.setCoords();
+  fabCanvas.requestRenderAll();
+
+  return shape;
+};
+
   const copy = () => {
     if (!fabCanvas) return;
 
@@ -230,6 +452,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     setOpenTextOption(false);
     if (activeObjects.length) {
       activeObjects.forEach((obj) => fabCanvas.remove(obj));
+      setIsActive(false);
       fabCanvas.discardActiveObject();
       fabCanvas.renderAll();
     }
@@ -332,7 +555,36 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  fabCanvas?.on("mouse:down", (e) => {
+    const target = e.target;
+    if (!target) {
+      setIsActive(false);
+      setOpacity(1);
+      return;
+    }
+    setIsActive(true);
+    setOpacity(target.opacity);
+    const activeObject = fabCanvas.getActiveObject();
+    if (target.type == "image") {
+      activeObject?.on("scaling", (e: any) => {
+        const obj = e.target;
+        obj.set({
+          opacity: 1,
+        });
+        fabCanvas.renderAll();
+      });
+    }
+  });
 
+  const handleObjectOpacity = (value) => {
+    setOpacity(value);
+    if (!fabCanvas) return;
+    const activeObject = fabCanvas.getActiveObject();
+    if (activeObject) {
+      activeObject.set("opacity", value);
+      fabCanvas.renderAll();
+    }
+  };
 
   const saveCanvas = () => {
     if (!fabCanvas) return;
@@ -381,6 +633,13 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     addText,
     exportCanvas,
     saveCanvas,
+    isActive,
+    opacity,
+    setOpacity,
+    handleObjectOpacity,
+    addShape,
+    openShapeOptions,
+    setOpenShapeOptions,
   };
 
   return <CanvasContext value={value}>{children}</CanvasContext>;

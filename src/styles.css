@@ -99,3 +99,30 @@
 .glass-content a img:hover {
   transform: scale(0.95);
 }
+
+
+.color-input {
+  -webkit-appearance: none; /* Remove default style on WebKit */
+  border: none;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  background: none;
+  cursor: pointer;
+}
+
+/* Chrome, Edge, and Safari */
+.color-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.color-input::-webkit-color-swatch {
+  border: 2px solid #ccc;
+  border-radius: 50%;
+}
+
+/* Firefox */
+.color-input::-moz-color-swatch {
+  border: 2px solid #ccc;
+  border-radius: 50%;
+}

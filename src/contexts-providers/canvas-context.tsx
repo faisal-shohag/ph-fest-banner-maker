@@ -5,6 +5,7 @@ export interface CanvasContextType {
   fabCanvas: Canvas | null;
   setFabCanvas: (canvas: Canvas | null) => void;
   openTextOptions: boolean;
+  isActive: boolean;
   setOpenTextOption: (isOpen: boolean) => void;
   aspect: number;
   handleImageFromURL: (imageUrl: string) => void;
@@ -25,6 +26,12 @@ export interface CanvasContextType {
   addText: () => void;
   exportCanvas: (format:any, title:string) => void;
   saveCanvas: () => void;
+  opacity: number;
+  setOpacity:(opacity: number) => void;
+  handleObjectOpacity: (opacity: number) => void;
+  addShape: (shape: string, options?:any) => void;
+  openShapeOptions: boolean;
+  setOpenShapeOptions: (openShapeOption:boolean) => void;
 }
 
 export const CanvasContext = createContext<CanvasContextType | null>(null);

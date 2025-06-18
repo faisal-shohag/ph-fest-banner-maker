@@ -16,15 +16,19 @@ import {
 import { useCanvas } from "@/hooks/use-canvas";
 import { PiFileSvgFill, PiFilePngFill, PiFileJpgFill } from "react-icons/pi";
 import { FaFileExport } from "react-icons/fa";
+import { Slider } from "@/components/ui/slider";
+import { TbBackground } from "react-icons/tb";
+import { Separator } from "@/components/ui/separator";
 const TopBar = () => {
   const [editTitle, setEditTitle] = useState(false);
   const [title, setTitle] = useState("Untitled Template");
   const { user } = use(AuthContext) as any
-  const {saveCanvas} = useCanvas()
+  const {saveCanvas, isActive, opacity, handleObjectOpacity} = useCanvas()
+
 
   return (
-    <div className="fixed pl-20 dark:bg-zinc-800 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full flex justify-between">
-      <div className="flex items-center text-center gap-10">
+    <div className="fixed pl-20 dark:bg-zinc-900 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full flex justify-between">
+      <div className="flex items-center text-center gap-5">
         {editTitle ? (
           <div className="flex  items-center gap-2">
             <Input
@@ -52,10 +56,29 @@ const TopBar = () => {
           </div>
         )}
 
-        <div className="flex items-center gap-5 text-2xl px-5 border-r border-l">
-          <Button  size={'sm'} variant={'outline'}><GrUndo/></Button>
-          <Button size={'sm'} variant={'outline'}><GrRedo/></Button>
+        <Separator orientation="vertical"/>
+
+        <div className="flex items-center gap-5 text-2xl ">
+          <Button disabled  size={'sm'} variant={'outline'}><GrUndo/></Button>
+          <Button disabled size={'sm'} variant={'outline'}><GrRedo/></Button>
         </div>
+
+        <Separator orientation="vertical"/>
+
+        <div className="flex items-center gap-2">
+          <TbBackground size={24}/>
+          <Slider value={[opacity]}
+          onValueChange={(value) => handleObjectOpacity(value[0])}
+          disabled={!isActive}
+          max={1}
+          min={0.1}
+          step={0.1}
+          title="Tansparency"
+          className="w-[150px]"
+          />
+
+        </div>
+        <Separator orientation="vertical"/>
       </div>
       <div className="flex gap-3 items-center">
         <AvatarDisplay user={user}/>
