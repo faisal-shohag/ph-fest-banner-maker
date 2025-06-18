@@ -9,6 +9,7 @@ import { PiHeartFill } from "react-icons/pi";
 
 const Shapes = () => {
   const { addShape } = useCanvas();
+  
   const shapes = [
     {
       title: "Rectangle",

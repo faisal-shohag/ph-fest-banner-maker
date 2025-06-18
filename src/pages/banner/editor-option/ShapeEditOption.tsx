@@ -88,13 +88,14 @@ const angle = parseFloat(value) || 0;
     shape.setCoords();
     fabCanvas.requestRenderAll();
   }, [fabCanvas]);
-
+ const shapeTypes = ['rectangle', 'circle', 'triangle', 'line', 'polyline', 'polygon', 'path']
+ 
   // Get current shape styles
   const getCurrentShapeStyles = useCallback(() => {
     if (!fabCanvas) return null;
 
     const activeObject:any = fabCanvas.getActiveObject();
-    if (!activeObject || activeObject.type !== "rectangle" || activeObject.type !== "triangle" || activeObject.type !== "line" || activeObject.type !== "polyline" || activeObject.type !== "circle") return;
+    if (!activeObject || !shapeTypes.includes(activeObject.type)) return;
 
     const shape = activeObject as any;
 
@@ -192,7 +193,7 @@ const angle = parseFloat(value) || 0;
   // Selection change handler
   const handleSelectionChanged = useCallback(() => {
     const activeObject = fabCanvas?.getActiveObject();
-    if (activeObject && activeObject.type !== "textbox" && activeObject.type !== "text") {
+    if (activeObject && shapeTypes.includes(activeObject.type)) {
       if (openShapeOptions) {
         requestAnimationFrame(updateShapeOptionsState);
       }
