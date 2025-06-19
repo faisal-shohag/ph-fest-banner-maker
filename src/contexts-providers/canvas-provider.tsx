@@ -589,6 +589,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
   const saveCanvas = () => {
     if (!fabCanvas) return;
     const dataJSON = fabCanvas.toJSON();
+    console.log(dataJSON)
     localStorage.setItem("savedCanvas", JSON.stringify(dataJSON));
   };
 

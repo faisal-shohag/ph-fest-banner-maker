@@ -333,7 +333,7 @@ const FabCanvas = ({
         <ContextMenuTrigger>
           <div
             ref={wrapperRef}
-            className="relative"
+            className="relative rounded-sm overflow-hidden"
             style={{
               transform: `scale(${zoom})`,
               transition: isZooming

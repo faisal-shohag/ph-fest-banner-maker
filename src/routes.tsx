@@ -17,7 +17,7 @@ export const router = createBrowserRouter([
         element: <Home />,
       },
       {
-        path: "/editor",
+        path: "/editor/:id",
         element:<ProtectedRoute>
           <CanvasProvider><Banner /></CanvasProvider>
         </ProtectedRoute>,
