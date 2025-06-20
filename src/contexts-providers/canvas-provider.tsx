@@ -450,6 +450,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     if (!fabCanvas) return;
     const activeObjects = fabCanvas.getActiveObjects();
     setOpenTextOption(false);
+    setOpenShapeOptions(false)
     if (activeObjects.length) {
       activeObjects.forEach((obj) => fabCanvas.remove(obj));
       setIsActive(false);
@@ -534,26 +535,83 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     setAspect(w / h);
   };
 
-  const exportCanvas = (format, title: string) => {
-    try {
-      // Try using Fabric.js toDataURL directly (sometimes works better)
-      console.log(fabCanvas?.height);
-      console.log(fabCanvas?.width);
-      const dataURL = fabCanvas?.toDataURL({
-        format,
-        quality: 1,
-        multiplier: 2,
-      });
-      const link: any = document.createElement("a");
-      link.href = dataURL;
-      link.download = `${title}.${format}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (e) {
-      console.error("Export failed:", e);
+const exportCanvas = (format: "png" | "jpeg" | "svg", title: string, quality: number = 0.8, resolution:number=1) => {
+  try {
+    // console.log(`Exporting canvas as ${format}`);
+    // console.log(`Canvas dimensions: ${fabCanvas?.width}x${fabCanvas?.height}`);
+    console.log(quality)
+
+    if (!fabCanvas) {
+      throw new Error("Canvas is not initialized");
     }
-  };
+
+    let url: string;
+    let extension: string;
+
+    if (format === "svg") {
+      // Clean text objects before export to avoid invalid properties
+      fabCanvas.getObjects().forEach((obj:any) => {
+        if (obj.type === "text" || obj.type === "i-text" || obj.type === "textbox") {
+          if (obj.textDecorationThickness) {
+            obj.set("textDecorationThickness", undefined); // Remove invalid property
+          }
+        }
+      });
+      fabCanvas.renderAll();
+
+      let svgString = fabCanvas.toSVG({
+        suppressPreamble: false,
+        encoding: "UTF-8",
+      });
+
+      if (!svgString) {
+        throw new Error("Failed to generate SVG");
+      }
+
+      // Sanitize SVG to remove invalid text-decoration-thickness
+      svgString = svgString = svgString
+        .replace(/text-decoration-thickness:[^;]+;/g, "")
+        .replace(/white-space:\s*pre;/g, "");
+
+      // Log SVG for debugging
+      console.log("Generated SVG:", svgString);
+
+      // Validate SVG string
+      if (!svgString.includes("<svg")) {
+        throw new Error("Invalid SVG output: Missing <svg> tag");
+      }
+
+      // Create a Blob from the SVG string
+      const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+      url = URL.createObjectURL(blob);
+      extension = "svg";
+    } else {
+      url = fabCanvas.toDataURL({
+        format,
+        quality,
+        multiplier: resolution,
+      });
+      if (!url || url === "data:,") {
+        throw new Error(`Failed to generate ${format.toUpperCase()} image`);
+      }
+      extension = format;
+    }
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${title}.${extension}`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    if (format === "svg") {
+      URL.revokeObjectURL(url);
+    }
+  } catch (e) {
+    console.error("Export failed:", e);
+    throw e; // Rethrow for UI feedback
+  }
+};
 
   fabCanvas?.on("mouse:down", (e) => {
     const target = e.target;
@@ -586,7 +644,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const saveCanvas = () => {
+  const saveCanvasToLocalStorage = () => {
     if (!fabCanvas) return;
     const dataJSON = fabCanvas.toJSON();
     console.log(dataJSON)
@@ -635,7 +693,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     handleRemoveBg,
     addText,
     exportCanvas,
-    saveCanvas,
+    saveCanvasToLocalStorage,
     isActive,
     opacity,
     setOpacity,

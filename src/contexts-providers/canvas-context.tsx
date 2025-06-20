@@ -24,8 +24,8 @@ export interface CanvasContextType {
   handleCanvasBgImage: () => void;
   handleRemoveBg: () => void;
   addText: () => void;
-  exportCanvas: (format:any, title:string) => void;
-  saveCanvas: () => void;
+  exportCanvas: (format:any, title:string, quality: number, resolution:number) => void;
+  saveCanvasToLocalStorage: () => void;
   opacity: number;
   setOpacity:(opacity: number) => void;
   handleObjectOpacity: (opacity: number) => void;

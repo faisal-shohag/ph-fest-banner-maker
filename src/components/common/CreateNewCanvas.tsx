@@ -5,6 +5,9 @@ import { toast } from 'sonner' // or your preferred toast library
 import api from "@/lib/api.ts"
 import { use } from 'react'
 import { AuthContext } from '@/contexts-providers/auth-context'
+import { newCanvas } from '@/lib/constants'
+import { FaWandMagicSparkles } from "react-icons/fa6";
+
 
 // Define the template creation payload type
 interface CreateTemplatePayload {
@@ -43,80 +46,11 @@ interface TemplateResponse {
   }
 }
 
-const newCnavs = {
-    "version": "6.7.0",
-    "objects": [
-        {
-            "fontSize": 20,
-            "fontWeight": "normal",
-            "fontFamily": "\"Inter\", sans-serif",
-            "fontStyle": "normal",
-            "lineHeight": 1.16,
-            "text": "New Canvas",
-            "charSpacing": 0,
-            "textAlign": "center",
-            "styles": [
-                {
-                    "start": 0,
-                    "end": 10,
-                    "style": {
-                        "fill": "#080808",
-                        "fontFamily": "\"Lexend\", sans-serif"
-                    }
-                }
-            ],
-            "pathStartOffset": 0,
-            "pathSide": "left",
-            "pathAlign": "baseline",
-            "underline": false,
-            "overline": false,
-            "linethrough": false,
-            "textBackgroundColor": "",
-            "direction": "ltr",
-            "textDecorationThickness": 66.667,
-            "minWidth": 20,
-            "splitByGrapheme": false,
-            "type": "Textbox",
-            "version": "6.7.0",
-            "originX": "center",
-            "originY": "center",
-            "left": 416.8274,
-            "top": 278.0226,
-            "width": 159.0026,
-            "height": 22.6,
-            "fill": "#eeee",
-            "stroke": null,
-            "strokeWidth": 1,
-            "strokeDashArray": null,
-            "strokeLineCap": "butt",
-            "strokeDashOffset": 0,
-            "strokeLineJoin": "miter",
-            "strokeUniform": false,
-            "strokeMiterLimit": 4,
-            "scaleX": 3.629,
-            "scaleY": 3.629,
-            "angle": 0,
-            "flipX": false,
-            "flipY": false,
-            "opacity": 1,
-            "shadow": null,
-            "visible": true,
-            "backgroundColor": "",
-            "fillRule": "nonzero",
-            "paintFirst": "fill",
-            "globalCompositeOperation": "source-over",
-            "skewX": 0,
-            "skewY": 0
-        }
-    ],
-    "background": "#f4f5f7"
-}
+
 
 const CreateNewCanvas = () => {
   const navigate = useNavigate()
   const { user } = use(AuthContext) as any
-
-  console.log(user)
 
   // Create template mutation
   const createTemplateMutation = useMutation({
@@ -145,8 +79,9 @@ const CreateNewCanvas = () => {
     const newTemplateData: CreateTemplatePayload = {
       title: 'Untitled Canvas',
       description: 'A new canvas project',
-      canvas: newCnavs,
+      canvas: newCanvas,
       isPublic: false,
+      photoURL: 'https://ik.imagekit.io/anf/Others/new-canvas',
       userId: userId
     }
 
@@ -155,10 +90,12 @@ const CreateNewCanvas = () => {
 
   return (
     <div>
-      <Button 
+      <Button
+      className='custom-glass dark:text-white mt-10 py-5 px-10 cursor-pointer' 
         onClick={handleCreateCanvas}
         disabled={createTemplateMutation.isPending}
       >
+        <FaWandMagicSparkles />
         {createTemplateMutation.isPending ? 'Creating...' : 'Create New Canvas'}
       </Button>
     </div>

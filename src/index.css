@@ -154,3 +154,72 @@
   content: '';
   @apply bg-orange-500 dark:bg-zinc-900 h-[70%] w-[5px] left-0 top-2 rounded-full absolute
 }
+
+
+
+@property --angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+
+
+.custom-glass{
+  @apply dark:bg-zinc-900 dark:border-zinc-800;
+  /* padding: 10px 15px; */
+  background: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(6.4px);
+  -webkit-backdrop-filter: blur(6.4px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+
+.custom-glass-2{
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(6.4px);
+  -webkit-backdrop-filter: blur(6.4px);
+  
+}
+.g-card {
+  @apply bg-white dark:bg-[#1c1f2b] text-slate-500 dark:text-slate-300 shadow-xl border;
+  position: relative;
+}
+
+.g-card::after,
+.g-card::before {
+  content: "";
+  position: absolute;
+  height: 104.5%;
+  width: 100.5%;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: -1;
+  border-radius: 10px;
+  background-image: conic-gradient(
+    from var(--angle),
+    transparent 70%,
+    indigo,
+    purple,
+    red,
+    deeppink,
+    purple,
+    indigo
+  );
+  animation: 10s gspin linear infinite;
+}
+
+.g-card::before {
+  filter: blur(1.5rem);
+}
+
+@keyframes gspin {
+  0% {
+    --angle: 0deg;
+  }
+  100% {
+    --angle: 360deg;
+  }
+}

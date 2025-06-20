@@ -10,42 +10,53 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { IoDuplicateOutline } from "react-icons/io5";
-import {
-  Clipboard,
-  Copy,
-  Image,
-  ImageMinus,
-  Trash2,
-} from "lucide-react";
+import { Clipboard, Copy, Image, ImageMinus, Loader2, Trash2 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import TopBar from "./TopBar";
+import TopBar from "./TopBar/TopBar";
 import SideBar from "./SideBar";
 import { useCanvas } from "@/hooks/use-canvas";
 import TextEditOption from "./editor-option/TextEditOption";
 import ShapeEditOptions from "./editor-option/ShapeEditOption";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { useParams } from "react-router";
 
 const Banner = () => {
-  const { fabCanvas } =
-    useCanvas();
+  const { fabCanvas } = useCanvas();
+  const { id } = useParams()
 
+   const { data, isLoading, error } = useQuery({
+    queryKey: [],
+    queryFn: async () => {
+      const response = await api.get(`/template/${id}`);
+      return response.data;
+    },
+  });
+
+
+
+  const template = data || null;
 
   useEffect(() => {
-    if (!fabCanvas) return;
-    const savedLocalCanvas: any = localStorage.getItem("savedCanvas");
-    if (!savedLocalCanvas) return;
-
-    fabCanvas.loadFromJSON(JSON.parse(savedLocalCanvas), () => {
-    
-      fabCanvas.renderAll();
-      console.log("Canvas loaded and rendered.");
+    if(template && fabCanvas) {
+      fabCanvas?.loadFromJSON( template.canvas, () => {
+        console.log("Canvas loaded and rendered.");
+        fabCanvas.renderAll();
     });
 
     setTimeout(() => {
-      fabCanvas.renderAll();
-    }, 1000);
-  }, [fabCanvas]);
+      fabCanvas.renderAll()
+    }, 1000)
+    }
+  }, [template, fabCanvas])
 
- 
+  // if(template && fabCanvas) {
+  //   fabCanvas?.requestRenderAll()
+  //     fabCanvas?.loadFromJSON( template.canvas, () => {
+  //       console.log("Canvas loaded and rendered.");
+  //       fabCanvas.renderAll();
+  //   });
+  // }
 
   fabCanvas?.on("selection:created", (e) => {
     const selectedObjects = e.selected; // Get all selected objects
@@ -72,8 +83,6 @@ const Banner = () => {
     fabCanvas.renderAll(); // Ensure changes are rendered
   });
 
- 
-  // Update styling when selection is updated
   fabCanvas?.on("selection:updated", (e) => {
     const selectedObjects = e.selected; // Get all selected objects
     selectedObjects.forEach((obj) => {
@@ -98,8 +107,6 @@ const Banner = () => {
     });
     fabCanvas.renderAll(); // Ensure changes are rendered
   });
-
-  // Clear styling when selection is cleared
   fabCanvas?.on("selection:cleared", (e) => {
     const deselectedObjects = e.deselected || [];
     deselectedObjects.forEach((obj) => {
@@ -118,7 +125,6 @@ const Banner = () => {
     });
     fabCanvas.renderAll(); // Ensure changes are rendered
   });
-
 
   // fabCanvas?.on("mouse:wheel", (opt) => {
   //   if (!fabCanvas) return;
@@ -149,37 +155,43 @@ const Banner = () => {
   //     fabCanvas.renderAll();
   //   }
   // });
+  if(error) return <div>Error occured!</div>
 
   return (
     <div className="flex">
-      <TopBar />
+     { template ? <TopBar templateTitle={template.title} templateId={template.id}/> : <div className="fixed pl-20 dark:bg-zinc-900 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full h-14 flex justify-between">
+      
+      </div>}
       <div>
-        <SideBar /> 
+        <SideBar />
       </div>
 
-  
-
       <div className="flex-1">
-            <TextEditOption/>
-            <ShapeEditOptions/>
-        <FabCanvas />
+        <TextEditOption />
+        <ShapeEditOptions />
+           {isLoading ? (
+              <div className="absolute z-50 translat-y-1/2 left-0 top-0 w-full h-full gap-2 flex justify-center items-center">
+                <Loader2 className="animate-spin" /> Canvas beign ready...
+              </div>
+            ) : null}
+  <FabCanvas isLoading={isLoading}/>
       </div>
     </div>
   );
 };
 
-
-
 type FabCanvasProps = {
   width?: number;
   height?: number;
   bgColor?: string;
+  isLoading: boolean
 };
 
 const FabCanvas = ({
   width = 800,
   height = 600,
-  bgColor = "#2222",
+  bgColor = "#fff",
+  isLoading,
 }: FabCanvasProps) => {
   const {
     setFabCanvas,
@@ -192,7 +204,6 @@ const FabCanvas = ({
     sendBack,
     handleCanvasBgImage,
     handleRemoveBg,
-  
   } = useCanvas();
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -205,21 +216,17 @@ const FabCanvas = ({
 
   useEffect(() => {
     if (canvasRef.current) {
-      // const newWidth = Math.min(canvasRef.current.offsetWidth, width);
       const canvas = new Canvas(canvasRef.current, {
-        width: width,
-        height: height,
-        backgroundColor: bgColor,
+        // backgroundColor: bgColor,
         preserveObjectStacking: true,
       });
 
       setFabCanvas(canvas);
-
       return () => {
         canvas.dispose();
       };
     }
-  }, [width, height, bgColor, setFabCanvas, aspect]);
+  }, [width, height, bgColor, setFabCanvas, aspect, isLoading]);
 
   useEffect(() => {
     const wrapper = wrapperRef.current;
@@ -299,41 +306,15 @@ const FabCanvas = ({
 
   // Format zoom percentage for display
   const zoomPercentage = Math.round(zoom * 100);
-
-  // const aspectFormat = {
-  //   "1.78": "16:9",
-  //   "1.00": "1:1",
-  // };
-
+  
   return (
     <div className="w-full flex flex-col justify-center items-center h-full relative">
-      {/* <div className="my-2 pt-5">
-        <Select
-          onValueChange={(value) => {
-            aspectRatioControl(value);
-          }}
-        >
-          <SelectTrigger size="sm">
-            <SelectValue
-              placeholder={aspectFormat[aspect.toFixed(2).toString()]}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectGroup>
-              <SelectItem value="1:1">1:1</SelectItem>
-              <SelectItem value="16:9">16:9</SelectItem>
-
-            
-            </SelectGroup>
-          </SelectContent>
-        </Select>
-      </div> */}
 
       <ContextMenu>
         <ContextMenuTrigger>
           <div
             ref={wrapperRef}
-            className="relative rounded-sm overflow-hidden"
+            className={`relative rounded-sm overflow-hidden`}
             style={{
               transform: `scale(${zoom})`,
               transition: isZooming
@@ -355,7 +336,10 @@ const FabCanvas = ({
               }
             }}
           >
-            <canvas
+           
+            {
+              
+              <canvas
               className="mx-auto block"
               ref={canvasRef}
               width={width}
@@ -364,7 +348,11 @@ const FabCanvas = ({
                 boxShadow: "0 0 0 1px rgba(0,0,0,0.1)",
               }}
             />
+            }
+            
           </div>
+        
+            
         </ContextMenuTrigger>
 
         <ContextMenuContent className="w-60">

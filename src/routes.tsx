@@ -1,11 +1,11 @@
 import { createBrowserRouter, Outlet } from "react-router";
-import Home from "./pages/Home";
 import Banner from "./pages/banner/Banner";
 import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/authentication/Login";
 import Signup from "./pages/authentication/Signup";
 import ProtectedRoute from "./protected-route";
 import CanvasProvider from "./contexts-providers/canvas-provider";
+import Home from "./pages/Home/Home";
 
 export const router = createBrowserRouter([
   {
@@ -16,13 +16,18 @@ export const router = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      {
-        path: "/editor/:id",
-        element:<ProtectedRoute>
-          <CanvasProvider><Banner /></CanvasProvider>
-        </ProtectedRoute>,
-      },
+      
     ],
+  },
+  {
+    path: "/editor/:id",
+    element: (
+      <ProtectedRoute>
+        <CanvasProvider>
+          <Banner />
+        </CanvasProvider>
+      </ProtectedRoute>
+    ),
   },
  {
     path: '/auth',

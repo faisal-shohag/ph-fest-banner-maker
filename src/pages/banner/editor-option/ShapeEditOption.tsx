@@ -6,7 +6,9 @@ import {
   EyeOff
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
-
+import { TbBackground } from "react-icons/tb";
+import { CgBorderStyleSolid } from "react-icons/cg";
+import { RxBorderWidth } from "react-icons/rx";
 const ShapeEditOptions = () => {
   const { fabCanvas, openShapeOptions, setOpenShapeOptions} = useCanvas();
   
@@ -88,7 +90,7 @@ const angle = parseFloat(value) || 0;
     shape.setCoords();
     fabCanvas.requestRenderAll();
   }, [fabCanvas]);
- const shapeTypes = ['rectangle', 'circle', 'triangle', 'line', 'polyline', 'polygon', 'path']
+ const shapeTypes = ['rectangle', 'rect', 'circle', 'triangle', 'line', 'polyline', 'polygon', 'path']
  
   // Get current shape styles
   const getCurrentShapeStyles = useCallback(() => {
@@ -267,10 +269,10 @@ const angle = parseFloat(value) || 0;
           
           {/* Fill Color */}
           <div className="flex items-center gap-1">
-            <label className="text-sm font-medium">Fill:</label>
+            <label className="text-sm font-medium"><TbBackground size={20}/></label>
             <Input
               onChange={handleFillColorChange}
-              className="rounded-lg w-16 h-9 color-input"
+              className="rounded-lg w-8 h-9 color-input"
               type="color"
               value={shapeOptions.fill}
               title="Fill Color"
@@ -279,7 +281,7 @@ const angle = parseFloat(value) || 0;
 
           {/* Stroke Color */}
           <div className="flex items-center gap-1">
-            <label className="text-sm font-medium">Stroke:</label>
+            <label className="text-sm font-medium"><CgBorderStyleSolid size={20}/></label>
             <Input
               onChange={handleStrokeColorChange}
               className="rounded-lg w-16 h-9 color-input"
@@ -291,7 +293,7 @@ const angle = parseFloat(value) || 0;
 
           {/* Stroke Width */}
           <div className="flex items-center gap-1">
-            <label className="text-sm font-medium">Width:</label>
+            <label className="text-sm font-medium"><RxBorderWidth size={20}/></label>
             <Input
               onChange={handleStrokeWidthChange}
               className="rounded-lg w-16 h-9"
