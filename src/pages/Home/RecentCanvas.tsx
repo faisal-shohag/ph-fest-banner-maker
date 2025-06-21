@@ -26,7 +26,7 @@ const RecentCanvas = () => {
   if(templates.length === 0)  return <EmptyState/>
 
   return (
-    <section className="py-20">
+    <section className="py-10">
     <Heading Icon={MdOutlineTimelapse} title={'Recent Canvas'} subtitle={'Continue where you left off'}/>
       {/* Recent canvas content */}
       <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4">

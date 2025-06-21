@@ -20,13 +20,14 @@ import ShapeEditOptions from "./editor-option/ShapeEditOption";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useParams } from "react-router";
+import { Toaster } from "react-hot-toast";
 
 const Banner = () => {
   const { fabCanvas } = useCanvas();
   const { id } = useParams()
 
    const { data, isLoading, error } = useQuery({
-    queryKey: [],
+    queryKey: ["editor-template"],
     queryFn: async () => {
       const response = await api.get(`/template/${id}`);
       return response.data;
@@ -159,7 +160,7 @@ const Banner = () => {
 
   return (
     <div className="flex">
-     { template ? <TopBar templateTitle={template.title} templateId={template.id}/> : <div className="fixed pl-20 dark:bg-zinc-900 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full h-14 flex justify-between">
+     { template ? <TopBar templateTitle={template.title} templateId={template.id} tags={template.tags} publish={template.isPublic}/> : <div className="fixed pl-20 dark:bg-zinc-900 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full h-14 flex justify-between">
       
       </div>}
       <div>
@@ -176,6 +177,7 @@ const Banner = () => {
             ) : null}
   <FabCanvas isLoading={isLoading}/>
       </div>
+      <Toaster/>
     </div>
   );
 };

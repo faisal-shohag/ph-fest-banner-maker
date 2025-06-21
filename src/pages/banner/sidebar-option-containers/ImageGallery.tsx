@@ -1,9 +1,9 @@
 import { use, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import ImageKit from "imagekit";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import api from "@/lib/api";
 import Images from "./Images";
+import { imageKit } from "@/lib/constants";
 
 const ImageGallery = ({handleImageFromURL}) => {
   const fileInputRef = useRef(null) as any;
@@ -12,11 +12,7 @@ const ImageGallery = ({handleImageFromURL}) => {
   const { user } = use(AuthContext) as any;
   const queryClient = useQueryClient();
 
- const imageKit = new ImageKit({
-  publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY as string,
-  privateKey: import.meta.env.VITE_IMAGEKIT_PRIVATE_KEY as string,
-  urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT as string,
-});
+
 
   // Mutation to save image to database
   const saveImageMutation = useMutation({

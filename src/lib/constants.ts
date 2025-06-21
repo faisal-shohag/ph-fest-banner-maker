@@ -1,3 +1,5 @@
+import { Canvas } from "fabric";
+import ImageKit from "imagekit";
 import { AlignCenterIcon, AlignJustifyIcon, AlignLeftIcon, AlignRightIcon } from "lucide-react";
 
 export const fontFamily = [
@@ -284,3 +286,28 @@ export   const fromNow = (dateString) => {
     if (diffInHours < 168) return `${Math.floor(diffInHours / 24)}d ago`;
     return date.toLocaleDateString();
   };
+
+
+  export  const createThumbnailFromCanvas = (fabCanvas) => {
+    if (fabCanvas) {
+      const dataURL = fabCanvas.toDataURL({
+        format: "png",
+        quality: 0.5,
+        multiplier: 0.2,
+      });
+      return dataURL
+    }
+  }
+export  const imageKit = new ImageKit({
+  publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY as string,
+  privateKey: import.meta.env.VITE_IMAGEKIT_PRIVATE_KEY as string,
+  urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT as string,
+});
+
+
+export const canvasToBlob = (fabCanvas:Canvas, quality=0.5) => {
+  const canvas = fabCanvas.getElement()
+  return new Promise((resolve) => {
+    canvas.toBlob(resolve, 'image/jpeg', quality)
+  })
+}
