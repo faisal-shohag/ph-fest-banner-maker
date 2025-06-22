@@ -6,6 +6,7 @@ import Signup from "./pages/authentication/Signup";
 import ProtectedRoute from "./protected-route";
 import CanvasProvider from "./contexts-providers/canvas-provider";
 import Home from "./pages/Home/Home";
+import Templates from "./pages/Templates/Templates";
 
 export const router = createBrowserRouter([
   {
@@ -16,7 +17,19 @@ export const router = createBrowserRouter([
         path: "/",
         element: <Home />,
       },
-      
+      {
+        path: "/templates",
+        element: <Templates/>,
+      },
+      {
+        path: "/template/:id",
+        element: <div>Template</div>,
+      },
+
+       {
+        path: "/contribute",
+        element: <div>Contribute Page</div>,
+      },
     ],
   },
   {

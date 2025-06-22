@@ -5,10 +5,16 @@ import { BiSolidWidget } from "react-icons/bi";
 import { Link } from "react-router";
 import { FaHandshakeAngle } from "react-icons/fa6";
 import { ThemeToggle } from "@/components/ui/toggle-theme";
+import { HomeIcon } from "lucide-react";
 const NavBar = () => {
   const { user } = use(AuthContext) as any;
 
   const navlinks = [
+     {
+      title: "Home",
+      icon: <HomeIcon />,
+      link: "/",
+    },
     {
       title: "Templates",
       icon: <BiSolidWidget />,

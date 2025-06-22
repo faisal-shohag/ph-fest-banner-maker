@@ -1,13 +1,13 @@
 
 import CreateNewCanvas from "@/components/common/CreateNewCanvas";
 import RecentCanvas from "./RecentCanvas";
-import NavBar from "./NavBar";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import TemplateShowcase from "./TemplateShowcase";
 export default function Home() {
   return (
     <div className={`transition-colors duration-500  `}>
-        <NavBar/>
+   
         <section className="flex  pt-5">
           <div className="flex flex-col items-center gap-5  g-card rounded-2xl  py-5 w-screen  text-center">
             <div className="font-bold text-3xl">
@@ -26,6 +26,8 @@ export default function Home() {
         </section>
 
         <RecentCanvas/>
+
+        <TemplateShowcase/>
 
     </div>
   );
