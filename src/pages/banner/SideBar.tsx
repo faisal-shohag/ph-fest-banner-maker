@@ -40,7 +40,7 @@ const SideBar = () => {
           setActiveOption(null);
         }}
       />     
-      <div className="z-[9999] dark:bg-zinc-900 bg-zinc-100 py-5 flex flex-col gap-5 min-w-[75px] max-w-[200px] justify-between">
+      <div className="z-[9999] dark:bg-zinc-900  bg-zinc-100 py-5 flex flex-col gap-5 min-w-[75px] max-w-[200px] justify-between">
         <div className="flex flex-col gap-10 pt-20">
 
           <div className="absolute top-3 left-5">

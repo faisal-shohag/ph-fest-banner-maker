@@ -311,3 +311,54 @@ export const canvasToBlob = (fabCanvas:Canvas, quality=0.5) => {
     canvas.toBlob(resolve, 'image/jpeg', quality)
   })
 }
+
+export const resizeSvg = (svgString, width, height) => {
+  // Input validation
+  if (typeof svgString !== 'string' || !svgString.trim()) {
+    throw new Error('Invalid SVG string');
+  }
+  if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+    throw new Error('Width and height must be positive numbers');
+  }
+
+  // Check if the string contains an SVG tag
+  if (!svgString.includes('<svg')) {
+    throw new Error('Input does not contain an SVG tag');
+  }
+
+  // Function to normalize units (optional, assumes pixels if no unit provided)
+  const normalizeDimension = (value) => {
+    return typeof value === 'string' && value.match(/^\d+(\.\d+)?(%|px|em|rem)?$/)
+      ? value
+      : `${value}px`;
+  };
+
+  const normalizedWidth = normalizeDimension(width);
+  const normalizedHeight = normalizeDimension(height);
+
+  // Replace or add width and height attributes
+  let result = svgString;
+
+  // Check if SVG tag already has width/height attributes
+  if (/<svg[^>]*width=/.test(svgString)) {
+    // Replace existing width
+    result = result.replace(/(<svg[^>]*width=")[^"]*(")/, `$1${normalizedWidth}$2`);
+  } else {
+    // Add width attribute
+    result = result.replace(/(<svg[^>]*)>/, `$1 width="${normalizedWidth}">`);
+  }
+
+  if (/<svg[^>]*height=/.test(svgString)) {
+    // Replace existing height
+    result = result.replace(/(<svg[^>]*height=")[^"]*(")/, `$1${normalizedHeight}$2`);
+  } else {
+    // Add height attribute
+    result = result.replace(/(<svg[^>]*)>/, `$1 height="${normalizedHeight}">`);
+  }
+
+  return result;
+};
+
+export const isSVGString = (svg) => {
+  return svg.trim().startsWith("<svg");
+}

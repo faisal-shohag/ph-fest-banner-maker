@@ -1,105 +1,116 @@
-import { Button } from '@/components/ui/button.tsx'
-import { useMutation } from '@tanstack/react-query'
-import { Navigate, useNavigate } from 'react-router'
-import { toast } from 'sonner' // or your preferred toast library
-import api from "@/lib/api.ts"
-import { use } from 'react'
-import { AuthContext } from '@/contexts-providers/auth-context'
-import { newCanvas } from '@/lib/constants'
+import { Button } from "@/components/ui/button.tsx";
+import { useMutation } from "@tanstack/react-query";
+import { Navigate, useNavigate } from "react-router";
+import { toast } from "sonner"; // or your preferred toast library
+import api from "@/lib/api.ts";
+import { use } from "react";
+import { AuthContext } from "@/contexts-providers/auth-context";
+import { newCanvas } from "@/lib/constants";
 import { FaWandMagicSparkles } from "react-icons/fa6";
-
 
 // Define the template creation payload type
 interface CreateTemplatePayload {
-  title: string
-  description?: string
-  photoURL?: string
-  canvas: object
-  isPublic?: boolean
-  tags?: string[]
-  categoryId?: number
-  userId: number
+  title: string;
+  description?: string;
+  photoURL?: string;
+  canvas: object;
+  isPublic?: boolean;
+  tags?: string[];
+  categoryId?: number;
+  userId: number;
 }
 
 // Define the response type from the API
 interface TemplateResponse {
-  id: number
-  title: string
-  description?: string
-  photoURL: string
-  canvas: object
-  isPublic: boolean
-  tags: string[]
-  categoryId?: number
-  userId: number
-  createdAt: string
+  id: number;
+  title: string;
+  description?: string;
+  photoURL: string;
+  canvas: object;
+  isPublic: boolean;
+  tags: string[];
+  categoryId?: number;
+  userId: number;
+  createdAt: string;
   user: {
-    id: number
-    username: string
-    displayName: string
-    photoURL?: string
-  }
+    id: number;
+    username: string;
+    displayName: string;
+    photoURL?: string;
+  };
   category?: {
-    id: number
-    name: string
-    description?: string
-  }
+    id: number;
+    name: string;
+    description?: string;
+  };
 }
 
-
-
-const CreateNewCanvas = () => {
-  const navigate = useNavigate()
-  const { user } = use(AuthContext) as any
+const CreateNewCanvas = ({
+  func,
+  template,
+}: {
+  func?: (boolean) => void;
+  template?: any;
+}) => {
+  const navigate = useNavigate();
+  const { user } = use(AuthContext) as any;
 
   // Create template mutation
   const createTemplateMutation = useMutation({
-    mutationFn: async (templateData: CreateTemplatePayload): Promise<TemplateResponse> => {
-      const response = await api.post('/template', templateData)
-      return response.data
+    mutationFn: async (
+      templateData: CreateTemplatePayload
+    ): Promise<TemplateResponse> => {
+      const response = await api.post("/template", templateData);
+      return response.data;
     },
     onSuccess: (data: TemplateResponse) => {
-      toast.success('Canvas created successfully!')
-      // Navigate to editor with the new template ID
-      navigate(`/editor/${data.id}`)
+      toast.success("Canvas created successfully!");
+      if (func) func(false);
+      navigate(`/editor/${data.id}`);
+      if (template) {
+        setTimeout(() => {
+          window.location.reload();
+        }, 1000);
+      }
     },
     onError: (error: any) => {
-      console.error('Error creating template:', error)
-      toast.error(error.response?.data?.message || 'Failed to create canvas')
-    }
-  })
+      console.error("Error creating template:", error);
+      toast.error(error.response?.data?.message || "Failed to create canvas");
+    },
+  });
 
   const handleCreateCanvas = async () => {
-    
-    if(!user) {
-      return <Navigate state={{ from: location.pathname }} to="/auth/login" />
+    if (!user) {
+      return <Navigate state={{ from: location.pathname }} to="/auth/login" />;
     }
-    const userId = user.id 
-    
+    const userId = user.id;
+
     const newTemplateData: CreateTemplatePayload = {
-      title: 'Untitled Canvas',
-      description: 'A new canvas project',
+      title: "Untitled Canvas",
+      description: "A new canvas project",
       canvas: newCanvas,
       isPublic: false,
-      photoURL: 'https://ik.imagekit.io/anf/Others/new-canvas',
-      userId: userId
+      photoURL: "https://ik.imagekit.io/anf/Others/new-canvas",
+      userId: userId,
+    };
+    if (template) {
+      return createTemplateMutation.mutate({ ...template, userId,  isPublic: false, photoMeta: null });
     }
-
-    createTemplateMutation.mutate(newTemplateData)
-  }
+    createTemplateMutation.mutate(newTemplateData);
+  };
 
   return (
     <div>
       <Button
-      className='custom-glass dark:text-white mt-10 py-5 px-10 cursor-pointer' 
+        className="custom-glass text-black dark:text-white px-10 cursor-pointer"
         onClick={handleCreateCanvas}
         disabled={createTemplateMutation.isPending}
       >
         <FaWandMagicSparkles />
-        {createTemplateMutation.isPending ? 'Creating...' : 'Create New Canvas'}
+        {createTemplateMutation.isPending ? "Creating..." : "Create New Canvas"}
       </Button>
     </div>
-  )
-}
+  );
+};
 
-export default CreateNewCanvas
+export default CreateNewCanvas;

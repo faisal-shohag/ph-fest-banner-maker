@@ -1,6 +1,5 @@
 import { CanvasContext } from "@/contexts-providers/canvas-context";
 import { use } from "react";
-
 export const useCanvas = () => {
   const context = use(CanvasContext);
   if (!context) {

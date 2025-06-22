@@ -2,9 +2,9 @@ import AvatarDisplay from "@/components/common/AvatarDisplay";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import { use } from "react";
 import { BiSolidWidget } from "react-icons/bi";
-import { MdTimelapse } from "react-icons/md";
 import { Link } from "react-router";
 import { FaHandshakeAngle } from "react-icons/fa6";
+import { ThemeToggle } from "@/components/ui/toggle-theme";
 const NavBar = () => {
   const { user } = use(AuthContext) as any;
 
@@ -13,11 +13,6 @@ const NavBar = () => {
       title: "Templates",
       icon: <BiSolidWidget />,
       link: "/templates",
-    },
-    {
-      title: "Recent Canvas",
-      icon: <MdTimelapse />,
-      link: "/recent-canvas",
     },
     {
       title: "Contribute",
@@ -34,8 +29,8 @@ const NavBar = () => {
         <div className="flex gap-5">
           {navlinks.map((link, index) => {
             return (
-              <div key={index + 1123}>
-                <Link className="flex items-center gap-2 backdrop-blur-sm bg-white/20 dark:bg-black/20 rounded-2xl border border-white/30 dark:border-white/10 py-1 px-3 shadow-xl" to={link.link}>
+              <div className="custom-glass px-5 py-1 rounded-xl" key={index + 1123}>
+                <Link className="flex items-center gap-2 " to={link.link}>
                   <div>
                     {link.icon}
                   </div>
@@ -47,12 +42,14 @@ const NavBar = () => {
           })}
         </div>
 
-        <div>
+        <div className="flex items-center gap-3">
           {user ? (
             <div>
               <AvatarDisplay user={user} />
             </div>
           ) : null}
+
+          <ThemeToggle/>
         </div>
       </div>
     </nav>

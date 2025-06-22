@@ -287,7 +287,7 @@ const TextEditOption = () => {
         className="z-[9] bg-transparent animate__animated animate__fadeInDown animate__faster dark:text-white p-3 w-full rounded-xl top-10"
         open={openTextOptions}
       >
-        <div className="dark:bg-zinc-800 max-w-2xl mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white items-center">
+        <div className="dark:bg-zinc-800 max-w-2xl mx-auto rounded-lg px-1 py-1 flex gap-2 justify-center shadow-2xl bg-white items-center border">
           {/* Font Family Selector */}
           <Select
             value={textOptions.fontFamily}

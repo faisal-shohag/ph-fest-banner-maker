@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Canvas } from "fabric";
+
 
 import {
   ContextMenu,
@@ -21,6 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
 import { useParams } from "react-router";
 import { Toaster } from "react-hot-toast";
+import { Canvas } from "fabric";
 
 const Banner = () => {
   const { fabCanvas } = useCanvas();
@@ -220,16 +221,20 @@ const FabCanvas = ({
     if (canvasRef.current) {
       const canvas = new Canvas(canvasRef.current, {
         // backgroundColor: bgColor,
+        imageSmoothingEnabled: true,
+        enableRetinaScaling: true,
         preserveObjectStacking: true,
       });
 
       setFabCanvas(canvas);
+
+
       return () => {
         canvas.dispose();
       };
     }
   }, [width, height, bgColor, setFabCanvas, aspect, isLoading]);
-
+     
   useEffect(() => {
     const wrapper = wrapperRef.current;
     if (!wrapper) return;

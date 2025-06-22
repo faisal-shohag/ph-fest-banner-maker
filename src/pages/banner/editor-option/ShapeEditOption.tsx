@@ -1,10 +1,10 @@
 import { Input } from "@/components/ui/input";
 import { useCanvas } from "@/hooks/use-canvas";
 import { debounce } from "lodash";
-import { 
-  Eye,
-  EyeOff
-} from "lucide-react";
+// import { 
+//   Eye,
+//   EyeOff
+// } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { TbBackground } from "react-icons/tb";
 import { CgBorderStyleSolid } from "react-icons/cg";
@@ -216,10 +216,10 @@ const angle = parseFloat(value) || 0;
     [applyShapeOption]
   );
 
-  const handleVisibilityToggle = useCallback(
-    () => applyShapeOption("visible", !shapeOptions.visible),
-    [applyShapeOption, shapeOptions.visible]
-  );
+  // const handleVisibilityToggle = useCallback(
+  //   () => applyShapeOption("visible", !shapeOptions.visible),
+  //   [applyShapeOption, shapeOptions.visible]
+  // );
 
   // Event listeners setup
   useEffect(() => {
@@ -249,13 +249,13 @@ const angle = parseFloat(value) || 0;
     };
   }, [debouncedUpdateState]);
 
-  const getButtonClass = useCallback(
-    (isActive = false) =>
-      `${isActive ? "bg-blue-600 text-white" : "hover:bg-blue-600"} 
-     border hover:bg-blue-600 dark:text-white px-3 rounded-lg 
-     transition-colors duration-150 flex items-center justify-center py-2`,
-    []
-  );
+  // const getButtonClass = useCallback(
+  //   (isActive = false) =>
+  //     `${isActive ? "bg-blue-600 text-white" : "hover:bg-blue-600"} 
+  //    border hover:bg-blue-600 dark:text-white px-3 rounded-lg 
+  //    transition-colors duration-150 flex items-center justify-center py-2`,
+  //   []
+  // );
 
   if (!openShapeOptions) return null;
 
@@ -265,11 +265,11 @@ const angle = parseFloat(value) || 0;
         className="z-[9] bg-transparent animate__animated animate__fadeInDown animate__faster dark:text-white p-3 w-full rounded-xl top-10"
         open={openShapeOptions}
       >
-        <div className="dark:bg-zinc-800 max-w-sm mx-auto rounded-xl px-5 py-2 flex gap-2 justify-center shadow-2xl bg-white items-center flex-wrap">
+        <div className="dark:bg-zinc-800 max-w-xs mx-auto rounded-xl px-1 border py-1 flex gap-7 justify-center shadow-2xl bg-white items-center flex-wrap">
           
           {/* Fill Color */}
           <div className="flex items-center gap-1">
-            <label className="text-sm font-medium"><TbBackground size={20}/></label>
+            <label className="text-sm font-medium"><TbBackground size={25}/></label>
             <Input
               onChange={handleFillColorChange}
               className="rounded-lg w-8 h-9 color-input"
@@ -281,7 +281,7 @@ const angle = parseFloat(value) || 0;
 
           {/* Stroke Color */}
           <div className="flex items-center gap-1">
-            <label className="text-sm font-medium"><CgBorderStyleSolid size={20}/></label>
+            <label className="text-sm font-medium"><CgBorderStyleSolid size={25}/></label>
             <Input
               onChange={handleStrokeColorChange}
               className="rounded-lg w-16 h-9 color-input"
@@ -293,7 +293,7 @@ const angle = parseFloat(value) || 0;
 
           {/* Stroke Width */}
           <div className="flex items-center gap-1">
-            <label className="text-sm font-medium"><RxBorderWidth size={20}/></label>
+            <label className="text-sm font-medium"><RxBorderWidth size={25}/></label>
             <Input
               onChange={handleStrokeWidthChange}
               className="rounded-lg w-16 h-9"
@@ -335,14 +335,14 @@ const angle = parseFloat(value) || 0;
           </div> */}
 
           {/* Visibility Toggle */}
-          <button
+          {/* <button
             className={getButtonClass(shapeOptions.visible)}
             onClick={handleVisibilityToggle}
             title="Toggle Visibility"
             type="button"
           >
             {shapeOptions.visible ? <Eye size={18} /> : <EyeOff size={18} />}
-          </button>
+          </button> */}
 
           {/* Flip Buttons */}
           {/* <button

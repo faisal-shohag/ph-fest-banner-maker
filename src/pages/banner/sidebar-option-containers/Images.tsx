@@ -151,8 +151,8 @@ const Images = ({ handleImageFromURL }) => {
 
   return (
     <div className="mx-auto">
-      <div className="mb-8">
-        <p className="text-gray-600 dark:text-gray-400">
+      <div className=" mb-2">
+        <p className="text-gray-600 text-sm dark:text-gray-400">
           {allImages.length} image{allImages.length !== 1 ? "s" : ""}
         </p>
       </div>

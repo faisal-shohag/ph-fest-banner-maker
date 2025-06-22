@@ -4,8 +4,6 @@ import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import { Check, Download, InfoIcon, Loader, Save } from "lucide-react";
 import { use, useEffect, useState } from "react";
-import { GrUndo } from "react-icons/gr";
-import { GrRedo } from "react-icons/gr";
 
 import {
   Popover,
@@ -40,6 +38,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import toast from "react-hot-toast";
+
 
 const TopBar = ({ templateTitle, templateId , tags, publish}) => {
   const [editTitle, setEditTitle] = useState(false);
@@ -133,17 +132,6 @@ const TopBar = ({ templateTitle, templateId , tags, publish}) => {
             {title}
           </div>
         )}
-
-        <Separator orientation="vertical" />
-
-        <div className="flex items-center gap-5 text-2xl ">
-          <Button disabled size={"sm"} variant={"outline"}>
-            <GrUndo />
-          </Button>
-          <Button disabled size={"sm"} variant={"outline"}>
-            <GrRedo />
-          </Button>
-        </div>
 
         <Separator orientation="vertical" />
 
