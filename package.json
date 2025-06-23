@@ -50,8 +50,6 @@
     "embla-carousel-react": "^8.6.0",
     "fabric": "^6.7.0",
     "fabric-guideline-plugin": "^0.0.11",
-    "fabric-history": "^2.0.0",
-    "fabric-v6-guideline": "^0.0.9",
     "framer-motion": "^12.18.1",
     "i": "^0.3.7",
     "imagekit": "^6.0.0",

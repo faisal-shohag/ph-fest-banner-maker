@@ -45,9 +45,9 @@ class HistoryFeature {
         this.canvas.on(this._historyEvents());
     }
 
-    private _historyDispose() {
-        this.canvas.off(this._historyEvents());
-    }
+    // private _historyDispose() {
+    //     this.canvas.off(this._historyEvents());
+    // }
 
     private _historySaveAction() {
         if (this.historyProcessing) return;
