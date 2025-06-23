@@ -56,7 +56,6 @@ const UndoRedo: React.FC = () => {
 
   useEffect(() => {
     window.addEventListener("keydown", (event) => {
-      console.log("event", event.key);
       if (event.ctrlKey && event.key === "z") {
         event.preventDefault();
         handleUndo();

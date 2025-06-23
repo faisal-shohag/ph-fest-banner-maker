@@ -1,9 +1,8 @@
-
-import CreateNewCanvas from "@/components/common/CreateNewCanvas";
 import RecentCanvas from "./RecentCanvas";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import TemplateShowcase from "./TemplateShowcase";
+import CreateBrandNewCanvas from "@/components/common/CreatBrandNewCanvas";
 export default function Home() {
   return (
     <div className={`transition-colors duration-500  `}>
@@ -20,7 +19,7 @@ export default function Home() {
             </div>
 
             <div>
-              <CreateNewCanvas />
+              <CreateBrandNewCanvas />
             </div>
           </div>
         </section>

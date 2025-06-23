@@ -18,6 +18,8 @@ import { CANVAS_CONFIG, useZoomControls } from "@/hooks/use-zoom-controlls";
 import { useCanvasSelection } from "@/hooks/use-canvas-selection";
 import { AlignGuidelines } from "fabric_guideline";
 
+import { canvasPresets } from '@/lib/constants'
+
 import '@/utils/canvas-history'
 
 type Template = {
@@ -26,6 +28,7 @@ type Template = {
   tags: string[];
   isPublic: boolean;
   canvas: any;
+  type: string,
 };
 
 type FabCanvasProps = {
@@ -44,8 +47,6 @@ const LoadingOverlay = () => (
 );
 
 const FabCanvas = ({
-  width = CANVAS_CONFIG.DEFAULT_WIDTH,
-  height = CANVAS_CONFIG.DEFAULT_HEIGHT,
   bgColor = CANVAS_CONFIG.DEFAULT_BG_COLOR,
   isLoading,
   template,
@@ -72,6 +73,8 @@ const FabCanvas = ({
       imageSmoothingEnabled: true,
       enableRetinaScaling: true,
       preserveObjectStacking: true,
+      height: canvasPresets[template.type].height,
+      width: canvasPresets[template.type].width,
     });
 
     const guideline = new AlignGuidelines({canvas});
@@ -85,7 +88,7 @@ const FabCanvas = ({
     return () => {
       canvas.dispose();
     };
-  }, [width, height, bgColor, setFabCanvas, isLoading, template]);
+  }, [bgColor, setFabCanvas, isLoading, template]);
 
   const handleMouseDown = (e: any) => {
     if (e.target === wrapperRef.current) {
@@ -98,6 +101,7 @@ const FabCanvas = ({
       wrapperRef.current.style.cursor = "grab";
     }
   };
+
 
   return (
     <div className="w-full flex flex-col justify-center items-center h-full relative">
@@ -112,8 +116,8 @@ const FabCanvas = ({
                 ? "transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
                 : "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
               transformOrigin: "center center",
-              width,
-              height,
+              width: canvasPresets[template.type].width,
+              height: canvasPresets[template.type].height,
               cursor: "grab",
             }}
             onMouseDown={handleMouseDown}
@@ -122,8 +126,8 @@ const FabCanvas = ({
             <canvas
               className="mx-auto block"
               ref={canvasRef}
-              width={width}
-              height={height}
+              width={canvasPresets[template.type].width}
+              height={canvasPresets[template.type].height}
               style={{
                 boxShadow: "0 0 0 1px rgba(0,0,0,0.1)",
               }}
