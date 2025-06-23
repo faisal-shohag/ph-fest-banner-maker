@@ -16,7 +16,7 @@ import TextEditOption from "../editor-option/TextEditOption";
 import ShapeEditOptions from "../editor-option/ShapeEditOption";
 import { CANVAS_CONFIG, useZoomControls } from "@/hooks/use-zoom-controlls";
 import { useCanvasSelection } from "@/hooks/use-canvas-selection";
-import { AlignGuidelines } from "fabric-guideline-plugin";
+import { AlignGuidelines } from "fabric_guideline";
 
 import '@/utils/canvas-history'
 
