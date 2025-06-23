@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet } from "react-router";
-import Banner from "./pages/banner/Banner";
+import Banner from "./pages/banner/editor/Banner";
 import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/authentication/Login";
 import Signup from "./pages/authentication/Signup";

@@ -38,6 +38,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import toast from "react-hot-toast";
+import UndoRedo from "./UndoRedo";
 
 
 const TopBar = ({ templateTitle, templateId , tags, publish}) => {
@@ -132,6 +133,8 @@ const TopBar = ({ templateTitle, templateId , tags, publish}) => {
             {title}
           </div>
         )}
+
+        <UndoRedo/>
 
         <Separator orientation="vertical" />
 

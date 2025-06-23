@@ -1,124 +1,146 @@
-import * as  fabric  from 'fabric';
+import { Canvas } from 'fabric';
 
-// Extend the fabric.Canvas interface to include our new properties and methods
-declare module 'fabric' {
-  interface Canvas {
-    historyUndo: string[];
-    historyRedo: string[]; // Added for redo functionality
-    historyNextState: string;
-    historyProcessing: boolean;
-    extraProps?: string[]; // Assuming extraProps might be passed to toDatalessJSON
+type HistoryEventCallback = () => void;
 
-    historyInit(): void;
-    historyNext(): string;
-    historySaveAction(): void;
-    undo(): void;
-    redo(): void; // Added for redo functionality
-  }
+class HistoryFeature {
+    private canvas: any;
+    private historyUndo: string[];
+    private historyRedo: string[];
+    private extraProps: string[];
+    private historyNextState: string;
+    private historyProcessing: boolean;
+    private historyUndoIndex:number
+
+    constructor(canvas: Canvas) {
+        this.canvas = canvas;
+        this.historyUndo = [];
+        this.historyRedo = [];
+        this.extraProps = ['selectable', 'editable'];
+        this.historyNextState = this._historyNext();
+        this.historyProcessing = false;
+        this.historyUndoIndex = 0;
+        this._historyInit();
+        
+        // Save initial state
+        setTimeout(() => {
+            this._historySaveAction();
+        }, 1000);
+    }
+
+    private _historyNext(): string {
+        return JSON.stringify(this.canvas.toDatalessJSON(this.extraProps));
+    }
+
+    private _historyEvents() {
+        return {
+            'object:added': this._historySaveAction.bind(this),
+            'object:removed': this._historySaveAction.bind(this),
+            'object:modified': this._historySaveAction.bind(this),
+            'object:skewing': this._historySaveAction.bind(this),
+            'path:created': this._historySaveAction.bind(this), // For drawing paths
+        };
+    }
+
+    private _historyInit() {
+        this.canvas.on(this._historyEvents());
+    }
+
+    private _historyDispose() {
+        this.canvas.off(this._historyEvents());
+    }
+
+    private _historySaveAction() {
+        if (this.historyProcessing) return;
+
+        const json = this.historyNextState;
+        this.historyUndo.push(json);
+        this.historyUndoIndex++;
+        this.historyRedo = []; 
+        this.historyNextState = this._historyNext();
+        this.canUndo()
+        
+        // console.log('History saved, undo stack:', this.historyUndo);
+        // console.log('History saved, redo stack:', this.historyRedo);
+        // console.log('History undo index:', this.historyUndoIndex);
+        this.canvas.fire('history:append', { json: json });
+    }
+
+    undo(callback?: HistoryEventCallback) {
+        if (!this.canUndo()) return;
+        if(this.historyUndoIndex <= 2) return
+        this.historyUndoIndex--;
+        console.log(this.historyUndoIndex)
+        
+        this.historyProcessing = true;
+
+        const history = this.historyUndo.pop();
+        if (history) {
+            this.historyNextState = history;
+             this.historyRedo.push(this.historyNextState);
+            this._loadHistory(history, 'history:undo', callback);
+        } else {
+            this.historyProcessing = false;
+        }
+    }
+
+    redo(callback?: HistoryEventCallback) {
+        if (!this.canRedo()) return;
+        
+        this.historyProcessing = true;
+
+        const history = this.historyRedo.pop();
+        if (history) {
+            // Save current state to undo stack
+            this.historyUndo.push(this.historyNextState);
+            this.historyNextState = history;
+            this._loadHistory(history, 'history:redo', callback);
+        } else {
+            this.historyProcessing = false;
+        }
+    }
+
+    private _loadHistory(history: string, event: any, callback?: HistoryEventCallback) {
+        this.canvas.loadFromJSON(history).then(()=>{
+          this.canvas.renderAll();
+            this.canvas.fire(event);
+            this.historyProcessing = false;
+
+            if (callback) callback();
+        });
+    }
+
+    clearHistory() {
+        this.historyUndo = [];
+        this.historyRedo = [];
+        this.historyNextState = this._historyNext();
+        this.canvas.fire('history:clear');
+    }
+
+    onHistory() {
+        this.historyProcessing = false;
+        this._historySaveAction();
+    }
+
+    canUndo(): boolean {
+        return this.historyUndoIndex > 2;
+    }
+
+    canRedo(): boolean {
+        return this.historyRedo.length > 0;
+    }
+
+    offHistory() {
+        this.historyProcessing = true;
+    }
+
+    // Debug method to check history state
+    getHistoryState() {
+        return {
+            undoLength: this.historyUndo.length,
+            redoLength: this.historyRedo.length,
+            processing: this.historyProcessing
+        };
+    }
 }
 
-fabric.Canvas.prototype.historyInit = function (this: fabric.Canvas) {
-  this.historyUndo = [];
-  this.historyRedo = []; // Initialize redo stack
-  this.historyNextState = this.historyNext();
-
-  this.on({
-    "object:added": this.historySaveAction,
-    "object:removed": this.historySaveAction,
-    "object:modified": this.historySaveAction,
-    // Add other events if you want them to trigger a save, e.g., "object:transformed"
-  });
-};
-
-fabric.Canvas.prototype.historyNext = function (this: fabric.Canvas): string {
-  // Ensure extraProps is handled if it might be undefined
-  console.log(this)
-  return JSON.stringify(this);
-};
-
-fabric.Canvas.prototype.historySaveAction = function (this: fabric.Canvas) {
-  if (this.historyProcessing) {
-    return;
-  }
-   
-
-
-  const json = this.historyNextState;
-  this.historyUndo.push(json);
-  // Clear redo history when a new action is performed
-  this.historyRedo = [];
-  this.historyNextState = this.historyNext();
-};
-
-fabric.Canvas.prototype.undo = function (this: fabric.Canvas) {
-  this.historyProcessing = true;
-   
-  
-
-  const history:any = this.historyUndo.pop();
-  console.log(JSON.parse(history));
-  if (history) {
-    // Before loading the previous state, save the current state to redo stack
-    this.historyRedo.push(this.historyNextState); // Push the current state (which was historyNextState) to redo
-    this.loadFromJSON(history, () => {
-      this.renderAll();
-      // After loading, the new historyNextState should be the one we just loaded
-      this.historyNextState = history; // Update historyNextState to reflect the loaded state
-      this.historyProcessing = false;
-    });
-     setTimeout(() => {
-      this.renderAll()
-    }, 500)
-  } else {
-    this.historyProcessing = false;
-  }
-};
-
-fabric.Canvas.prototype.redo = function (this: fabric.Canvas) {
-  this.historyProcessing = true;
-
-  const history = this.historyRedo.pop();
-  if (history) {
-    // Before loading the next state, save the current state to undo stack
-    this.historyUndo.push(this.historyNextState); // Push the current state (which was historyNextState) to undo
-    this.loadFromJSON(history, () => {
-      this.renderAll();
-      // After loading, the new historyNextState should be the one we just loaded
-      this.historyNextState = history; // Update historyNextState to reflect the loaded state
-      this.historyProcessing = false;
-    });
-  } else {
-    this.historyProcessing = false;
-  }
-};
-
-// Example Usage (assuming you have a fabric canvas instance)
-/*
-// In your application code:
-import { fabric } from 'fabric';
-import './fabric-history'; // Import the file where you defined the above code
-
-const canvas = new fabric.Canvas('myCanvas');
-canvas.historyInit();
-
-// Now you can use canvas.undo() and canvas.redo()
-// For example, after adding an object:
-const rect = new fabric.Rect({
-  left: 100,
-  top: 100,
-  fill: 'red',
-  width: 50,
-  height: 50
-});
-canvas.add(rect);
-
-// To undo:
-// document.getElementById('undoButton').addEventListener('click', () => {
-//   canvas.undo();
-// });
-
-// To redo:
-// document.getElementById('redoButton').addEventListener('click', () => {
-//   canvas.redo();
-// });
-*/
+export default HistoryFeature;
