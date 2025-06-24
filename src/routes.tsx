@@ -1,5 +1,4 @@
 import { createBrowserRouter, Outlet } from "react-router";
-import Banner from "./pages/banner/editor/Banner";
 import MainLayout from "./layouts/MainLayout";
 import Login from "./pages/authentication/Login";
 import Signup from "./pages/authentication/Signup";
@@ -7,6 +6,9 @@ import ProtectedRoute from "./protected-route";
 import CanvasProvider from "./contexts-providers/canvas-provider";
 import Home from "./pages/Home/Home";
 import Templates from "./pages/Templates/Templates";
+import  Contribute from "./pages/contribute/Contribute";
+import Editor from "./pages/canvas-editor/editor/Editor";
+
 
 export const router = createBrowserRouter([
   {
@@ -28,7 +30,7 @@ export const router = createBrowserRouter([
 
        {
         path: "/contribute",
-        element: <div>Contribute Page</div>,
+        element: <Contribute/>,
       },
     ],
   },
@@ -37,7 +39,7 @@ export const router = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <CanvasProvider>
-          <Banner />
+          <Editor />
         </CanvasProvider>
       </ProtectedRoute>
     ),

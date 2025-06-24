@@ -126,7 +126,7 @@ const RecentCanvas = () => {
                         {template.title}
                       </h3>
                       <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap ml-2">
-                        {fromNow(template.createdAt)}
+                        {fromNow(template.updatedAt)}
                       </span>
                     </div>
                     {template.tags && template.tags.length > 0 && (

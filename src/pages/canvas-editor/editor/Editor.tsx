@@ -242,7 +242,7 @@ const FabCanvas = ({
   );
 };
 
-const Banner = () => {
+const Editor = () => {
   const { id } = useParams();
   const [template, setTemplate] = useState<Template | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -283,4 +283,4 @@ const Banner = () => {
   );
 };
 
-export default Banner;
+export default Editor;

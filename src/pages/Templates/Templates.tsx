@@ -81,6 +81,9 @@ const Templates = () => {
 
   return (
     <div className="">
+    <head>
+        <title>Templates</title>
+    </head>
       <div className="sticky top-0 z-10 mt-5">
         <div className="">
           <div className="flex flex-col space-y-4">

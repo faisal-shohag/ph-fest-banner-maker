@@ -31,6 +31,8 @@ export default function Home() {
 
         <TemplateShowcase/>
 
+        <div className="h-64"></div>
+
     </div>
   );
 }

@@ -323,7 +323,7 @@ const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publi
     };
     
     const canvas = fabCanvas.toJSON()
-    mutation.mutate({ ...data, canvas, isPublic: isPublish });
+    mutation.mutate({ ...data, canvas, isPublic: isPublish, updatedAt: new Date() });
   };
 
   return (

@@ -9,7 +9,6 @@ import { RiHomeFill } from "react-icons/ri";
 const NavBar = () => {
   const { user } = use(AuthContext) as any;
   const location = useLocation()
-
   const navlinks = [
      {
       title: "Home",
@@ -34,7 +33,10 @@ const NavBar = () => {
   return (
     <nav className=" mb-5 border-b">
       <div className="line-flex items-center space-x-2 rounded-xl px-4 py-2 flex justify-between">
-        <div></div>
+        <div className="flex items-center gap-2 text-lg font-medium">
+          <img className="h-10" src="/icons/splash.png" alt="logo"/>
+          Hero Canvas
+        </div>
 
         <div className="flex gap-5">
           {navlinks.map((link, index) => {
