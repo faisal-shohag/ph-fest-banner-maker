@@ -1,21 +1,23 @@
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useMutation } from "@tanstack/react-query";
 import { Navigate, useNavigate } from "react-router";
 import { toast } from "sonner";
-import api from "@/lib/api.ts";
+import api from "@/lib/api";
 import { use, useState } from "react";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import { newCanvas } from "@/lib/constants";
-import { FaWandMagicSparkles } from "react-icons/fa6";
 import { 
+  FaWandMagicSparkles, 
   FaInstagram, 
-  FaTwitter, 
   FaRegImage, 
-  FaFileAlt, 
   FaDesktop,
-  FaPalette,
-  FaTimes
-} from "react-icons/fa";
+  FaPalette
+} from "react-icons/fa6";
+import { Loader2, Sparkles } from "lucide-react";
+import { FaFileAlt } from "react-icons/fa";
 
 interface CreateTemplatePayload {
   title: string;
@@ -60,53 +62,58 @@ interface CanvasPreset {
   width: number;
   height: number;
   description: string;
-  icon: React.ComponentType;
+  icon: React.ComponentType<any>;
   category: 'social' | 'document' | 'design' | 'presentation';
+  popular?: boolean;
 }
 
 const canvasPresets: CanvasPreset[] = [
+
+    {
+    key: 'normal',
+    name: 'Standard Canvas',
+    width: 800,
+    height: 600,
+    description: 'Versatile canvas for any design',
+    icon: FaPalette,
+    category: 'design',
+    popular: true
+  },
   {
     key: 'instagramPost',
     name: 'Instagram Post',
     width: 1080,
     height: 1080,
-    description: 'Square format for Instagram posts',
+    description: 'Perfect square format for Instagram posts',
     icon: FaInstagram,
-    category: 'social'
+    category: 'social',
+    popular: true
   },
-  {
-    key: 'twitterPost',
-    name: 'Twitter Post',
-    width: 1200,
-    height: 675,
-    description: 'Optimized for Twitter posts and headers',
-    icon: FaTwitter,
-    category: 'social'
-  },
+  // {
+  //   key: 'twitterPost',
+  //   name: 'Twitter Header',
+  //   width: 1200,
+  //   height: 675,
+  //   description: 'Optimized for Twitter posts and headers',
+  //   icon: FaTwitter,
+  //   category: 'social'
+  // },
   {
     key: 'socialPost',
-    name: 'Social Media Post',
+    name: 'Social Media',
     width: 1080,
     height: 1080,
-    description: 'General social media square format',
+    description: 'Universal social media format',
     icon: FaRegImage,
     category: 'social'
   },
-  {
-    key: 'normal',
-    name: 'Standard Canvas',
-    width: 800,
-    height: 600,
-    description: 'Default canvas size for general design',
-    icon: FaPalette,
-    category: 'design'
-  },
+
   {
     key: 'logo',
     name: 'Logo Design',
     width: 500,
     height: 500,
-    description: 'Square format ideal for logo creation',
+    description: 'Perfect square for logo creation',
     icon: FaPalette,
     category: 'design'
   },
@@ -115,7 +122,7 @@ const canvasPresets: CanvasPreset[] = [
     name: 'A4 Portrait',
     width: 794,
     height: 1123,
-    description: 'Standard A4 paper in portrait orientation',
+    description: 'Standard document format',
     icon: FaFileAlt,
     category: 'document'
   },
@@ -124,18 +131,19 @@ const canvasPresets: CanvasPreset[] = [
     name: 'A4 Landscape',
     width: 1123,
     height: 794,
-    description: 'Standard A4 paper in landscape orientation',
+    description: 'Horizontal document layout',
     icon: FaFileAlt,
     category: 'document'
   },
   {
     key: 'presentation',
-    name: 'Presentation Slide',
+    name: 'Presentation',
     width: 1280,
     height: 720,
-    description: '16:9 aspect ratio for presentations',
+    description: 'HD presentation slides',
     icon: FaDesktop,
-    category: 'presentation'
+    category: 'presentation',
+    popular: true
   }
 ];
 
@@ -154,13 +162,17 @@ const CreateBrandNewCanvas = () => {
       return response.data;
     },
     onSuccess: (data: TemplateResponse) => {
-      toast.success("Canvas created successfully!");
+      toast.success("Canvas created successfully!", {
+        description: "Your new canvas is ready to edit"
+      });
       navigate(`/editor/${data.id}`);
       setIsModalOpen(false);
     },
     onError: (error: any) => {
       console.error("Error creating template:", error);
-      toast.error(error.response?.data?.message || "Failed to create canvas");
+      toast.error("Failed to create canvas", {
+        description: error.response?.data?.message || "Please try again"
+      });
     },
   });
 
@@ -200,125 +212,154 @@ const CreateBrandNewCanvas = () => {
     setSelectedPreset(null);
   };
 
-  const getCategoryColor = (category: string) => {
-    const colors = {
-      social: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200',
-      document: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-      design: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200',
-      presentation: 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+  const getCategoryVariant = (category: string) => {
+    const variants = {
+      social: 'default',
+      document: 'secondary',
+      design: 'outline',
+      presentation: 'destructive'
     };
-    return colors[category] || colors.design;
+    return variants[category] || 'default';
+  };
+
+  const getCategoryGradient = (category: string) => {
+    const gradients = {
+      social: 'from-blue-500/10 to-purple-500/10',
+      document: 'from-green-500/10 to-emerald-500/10',
+      design: 'from-purple-500/10 to-pink-500/10',
+      presentation: 'from-orange-500/10 to-red-500/10'
+    };
+    return gradients[category] || gradients.design;
   };
 
   return (
-    <div>
-      <Button
-        className="custom-glass text-black dark:text-white px-10 cursor-pointer"
-        onClick={handleOpenModal}
-        disabled={createTemplateMutation.isPending}
-      >
-        <FaWandMagicSparkles />
-        Create New Canvas
-      </Button>
+    <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="relative overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-3 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+          onClick={handleOpenModal}
+          disabled={createTemplateMutation.isPending}
+        >
+          <div className="absolute inset-0 bg-white/20 animate-pulse"></div>
+          <FaWandMagicSparkles className="mr-2" />
+          Create New Canvas
+          <Sparkles className="ml-2 h-4 w-4" />
+        </Button>
+      </DialogTrigger>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                Choose Canvas Size
-              </h2>
-              <button
-                onClick={closeModal}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-              >
-                <FaTimes size={24} />
-              </button>
-            </div>
+      <DialogContent className=" max-h-[90vh] min-w-3xl overflow-hidden p-0 gap-0">
+        <DialogHeader className="px-8 py-6 border-b">
+          <DialogTitle className=" font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+            Choose Your Canvas
+          </DialogTitle>
+          <p className="text-muted-foreground text-sm">
+            Select the perfect size for your creative project
+          </p>
+        </DialogHeader>
 
-            {/* Modal Content */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {canvasPresets.map((preset) => {
-                  const IconComponent:any = preset.icon;
-                  const isSelected = selectedPreset?.key === preset.key;
-                  const isLoading = createTemplateMutation.isPending && isSelected;
+        <div className="overflow-y-auto max-h-[calc(90vh-200px)] p-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+            {canvasPresets.map((preset) => {
+              const IconComponent = preset.icon;
+              const isSelected = selectedPreset?.key === preset.key;
+              const isLoading = createTemplateMutation.isPending && isSelected;
 
-                  return (
-                    <div
-                      key={preset.key}
-                      className={`relative p-4 border-2 rounded-lg cursor-pointer transition-all duration-200 hover:shadow-md ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                          : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                      } ${isLoading ? 'opacity-75' : ''}`}
-                      onClick={() => !createTemplateMutation.isPending && handleCreateCanvas(preset)}
-                    >
-                      {isLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-gray-800 dark:bg-opacity-75 rounded-lg">
-                          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                        </div>
-                      )}
-                      
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="flex-shrink-0 p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
-                          <IconComponent className="w-5 h-5 text-gray-600 dark:text-gray-300" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 dark:text-white truncate">
-                            {preset.name}
-                          </h3>
-                          <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(preset.category)}`}>
-                            {preset.category}
-                          </span>
+              return (
+                <Card
+                  key={preset.key}
+                  className={`relative group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
+                    isSelected
+                      ? 'ring-2 ring-blue-500 shadow-lg scale-105'
+                      : 'hover:shadow-xl'
+                  } ${isLoading ? 'opacity-75' : ''} overflow-hidden`}
+                  onClick={() => !createTemplateMutation.isPending && handleCreateCanvas(preset)}
+                >
+                  {/* Background Gradient */}
+                  <div className={`absolute inset-0 bg-gradient-to-br ${getCategoryGradient(preset.category)} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                  
+                  {/* Popular Badge */}
+                  {preset.popular && (
+                    <div className="absolute top-3 right-3 z-10">
+                      <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        Popular
+                      </Badge>
+                    </div>
+                  )}
+
+                  {/* Loading Overlay */}
+                  {isLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-black/80 z-20 rounded-lg">
+                      <div className="text-center">
+                        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-blue-500" />
+                        <p className="text-sm font-medium">Creating...</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <CardContent className="p-6 relative z-10">
+                    {/* Canvas Preview */}
+                    <div className="flex justify-center mb-4">
+                      <div className="relative">
+                        <div 
+                          className="border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 rounded-md shadow-sm group-hover:shadow-md transition-shadow duration-300"
+                          style={{
+                            width: Math.min(80, (preset.width / Math.max(preset.width, preset.height)) * 80),
+                            height: Math.min(80, (preset.height / Math.max(preset.width, preset.height)) * 80)
+                          }}
+                        />
+                        {/* Icon Overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <IconComponent className="w-6 h-6 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors duration-300" />
                         </div>
                       </div>
+                    </div>
 
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                    {/* Content */}
+                    <div className="text-center space-y-3">
+                      <h3 className="font-bold text-lg text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                        {preset.name}
+                      </h3>
+                      
+                      <p className="text-sm text-muted-foreground">
                         {preset.description}
                       </p>
 
                       <div className="flex items-center justify-between">
-                        <div className="text-sm font-mono text-gray-500 dark:text-gray-400">
+                        <Badge variant={getCategoryVariant(preset.category)} className="capitalize">
+                          {preset.category}
+                        </Badge>
+                        <div className="text-xs font-mono text-muted-foreground">
                           {preset.width} × {preset.height}
                         </div>
-                        <div className="text-xs text-gray-400 dark:text-gray-500">
-                          {(preset.width / preset.height).toFixed(2)} ratio
-                        </div>
                       </div>
 
-                      {/* Visual representation */}
-                      <div className="mt-3 flex justify-center">
-                        <div 
-                          className="border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700"
-                          style={{
-                            width: Math.min(60, (preset.width / Math.max(preset.width, preset.height)) * 60),
-                            height: Math.min(60, (preset.height / Math.max(preset.width, preset.height)) * 60)
-                          }}
-                        />
+                      <div className="text-xs text-muted-foreground">
+                        Ratio: {(preset.width / preset.height).toFixed(2)}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex justify-end gap-3 p-6 border-t border-gray-200 dark:border-gray-700">
-              <Button
-                variant="outline"
-                onClick={closeModal}
-                disabled={createTemplateMutation.isPending}
-              >
-                Cancel
-              </Button>
-            </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
           </div>
         </div>
-      )}
-    </div>
+
+        {/* Footer */}
+        <div className="flex justify-between items-center px-8 py-4 border-t bg-gray-50 dark:bg-gray-900/50">
+          <p className="text-sm text-muted-foreground">
+            
+          </p>
+          <Button
+            variant="outline"
+            onClick={closeModal}
+            disabled={createTemplateMutation.isPending}
+          >
+            Cancel
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

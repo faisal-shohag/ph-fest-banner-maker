@@ -51,24 +51,21 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
 
   const addText = () => {
     if (!fabCanvas) return;
-    const textBox = new Textbox(
-      "ঈদের অনাবিল আনন্দে ভরে উঠুক প্রতিটি হৃদয়। আপনার জীবনের প্রতিটি দিন ছেয়ে যাক ঈদের খুশিতে।",
-      {
-        width: 200,
-        fontSize: 20,
-        fill: "#eeee",
-        fontFamily: '"Inter", sans-serif',
-        editable: true,
-        left: fabCanvas.width / 2,
-        top: fabCanvas.height / 2,
-        originX: "center",
-        originY: "center",
-      }
-    );
+    const textBox = new Textbox("Add Text here", {
+      width: 200,
+      fontSize: 20,
+      fill: "#eeee",
+      fontFamily: '"Inter", sans-serif',
+      editable: true,
+      left: fabCanvas.width / 2,
+      top: fabCanvas.height / 2,
+      originX: "center",
+      originY: "center",
+    });
 
     // fabCanvas.add(text);
     fabCanvas.add(textBox);
-    // fabCanvas.setActiveObject(text);
+    fabCanvas.setActiveObject(textBox);
     fabCanvas.renderAll();
   };
 
@@ -169,214 +166,219 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     fabCanvas.renderAll();
   };
 
- const addShape = (shapeType, options = {}) => {
-  if (!fabCanvas) return;
+  const addShape = (shapeType, options = {}) => {
+    if (!fabCanvas) return;
 
-  // Default options
-  const defaultOptions = {
-    left: fabCanvas.width / 2,
-    top: fabCanvas.height / 2,
-    fill: "#3f9fff", // Fixed hex color
-    stroke: "#3f9fff",
-    strokeWidth: 2,
-    rx: 10,
-    ry: 10,
-    selectable: true,
-    evented: true,
-  };
+    // Default options
+    const defaultOptions = {
+      left: fabCanvas.width / 2,
+      top: fabCanvas.height / 2,
+      fill: "#3f9fff", // Fixed hex color
+      stroke: "#3f9fff",
+      strokeWidth: 2,
+      rx: 10,
+      ry: 10,
+      selectable: true,
+      evented: true,
+    };
 
-  // Merge provided options with defaults
-  const shapeOptions:any = { ...defaultOptions, ...options };
-  let shape;
+    // Merge provided options with defaults
+    const shapeOptions: any = { ...defaultOptions, ...options };
+    let shape;
 
-   
-      
-
-  switch (shapeType.toLowerCase()) {
-    case "rect":
-    case "rectangle":
-      shape = new Rect({
-        width: shapeOptions.width || 100,
-        height: shapeOptions.height || 100,
-        ...shapeOptions,
-      });
-      break;
-
-    case "circle":
-      shape = new Circle({
-        radius: shapeOptions.radius || 50,
-        ...shapeOptions,
-      });
-      break;
-
-    case "triangle":
-      shape = new Triangle({
-        width: shapeOptions.width || 100,
-        height: shapeOptions.height || 100,
-        ...shapeOptions,
-      });
-      break;
-
-    case "line":
-      shape = new Line(
-        [
-          shapeOptions.x1 || 0,
-          shapeOptions.y1 || 0,
-          shapeOptions.x2 || 100,
-          shapeOptions.y2 || 100,
-        ],
-        {
-          stroke: shapeOptions.stroke,
-          strokeWidth: shapeOptions.strokeWidth,
+    switch (shapeType.toLowerCase()) {
+      case "rect":
+      case "rectangle":
+        shape = new Rect({
+          width: shapeOptions.width || 100,
+          height: shapeOptions.height || 100,
           ...shapeOptions,
-          fill: null, // Lines don't have fill
+        });
+        break;
+
+      case "circle":
+        shape = new Circle({
+          radius: shapeOptions.radius || 50,
+          ...shapeOptions,
+        });
+        break;
+
+      case "triangle":
+        shape = new Triangle({
+          width: shapeOptions.width || 100,
+          height: shapeOptions.height || 100,
+          ...shapeOptions,
+        });
+        break;
+
+      case "line":
+        shape = new Line(
+          [
+            shapeOptions.x1 || 0,
+            shapeOptions.y1 || 0,
+            shapeOptions.x2 || 100,
+            shapeOptions.y2 || 100,
+          ],
+          {
+            stroke: shapeOptions.stroke,
+            strokeWidth: shapeOptions.strokeWidth,
+            ...shapeOptions,
+            fill: null, // Lines don't have fill
+          }
+        );
+        break;
+
+      case "arrow": {
+        const arrowLength = shapeOptions.length || 100;
+        const arrowHeadSize = shapeOptions.arrowHeadSize || 15;
+        const strokeWidth = shapeOptions.strokeWidth || 2;
+
+        // Create arrow shaft (line)
+        const shaft = new Line([0, 8, arrowLength - arrowHeadSize, 8], {
+          stroke: shapeOptions.stroke,
+          strokeWidth: strokeWidth,
+          originX: "left",
+          originY: "center",
+        });
+
+        // Create arrowhead (triangle)
+        const arrowHead = new Triangle({
+          width: arrowHeadSize,
+          height: arrowHeadSize,
+          fill: shapeOptions.stroke,
+          left: arrowLength - arrowHeadSize,
+          top: 0,
+          originX: "left",
+          originY: "center",
+          angle: 90,
+        });
+
+        // Group shaft and arrowhead
+        shape = new Group([shaft, arrowHead], {
+          ...shapeOptions,
+          fill: null, // Group fill handled by individual objects
+        });
+        break;
+      }
+
+      case "ellipse":
+      case "oval":
+        shape = new Ellipse({
+          rx: shapeOptions.rx || shapeOptions.width / 2 || 60,
+          ry: shapeOptions.ry || shapeOptions.height / 2 || 40,
+          ...shapeOptions,
+        });
+        break;
+
+      case "polygon":
+      case "hexagon":
+        {
+          const sides = shapeOptions.sides || 6;
+          const radius = shapeOptions.radius || 50;
+          const polygonPoints: any = [];
+
+          for (let i = 0; i < sides; i++) {
+            const angle = (i * 2 * Math.PI) / sides;
+            polygonPoints.push({
+              x: radius * Math.cos(angle),
+              y: radius * Math.sin(angle),
+            });
+          }
+
+          shape = new Polygon(polygonPoints, {
+            ...shapeOptions,
+          });
         }
-      );
-      break;
+        break;
 
-    case "arrow":{
+      case "star": {
+        const outerRadius = shapeOptions.outerRadius || 50;
+        const innerRadius = shapeOptions.innerRadius || 25;
+        const points = shapeOptions.points || 5;
+        const starPoints: any = [];
 
-     const arrowLength = shapeOptions.length || 100;
-      const arrowHeadSize = shapeOptions.arrowHeadSize || 15;
-      const strokeWidth = shapeOptions.strokeWidth || 2;
-      
-      // Create arrow shaft (line)
-      const shaft = new Line([0, 8, arrowLength - arrowHeadSize, 8], {
-        stroke: shapeOptions.stroke,
-        strokeWidth: strokeWidth,
-        originX: 'left',
-        originY: 'center'
-      });
-      
-      // Create arrowhead (triangle)
-      const arrowHead = new Triangle({
-        width: arrowHeadSize,
-        height: arrowHeadSize,
-        fill: shapeOptions.stroke,
-        left: arrowLength - arrowHeadSize,
-        top: 0,
-        originX: 'left',
-        originY: 'center',
-        angle: 90
-      });
-    
-      // Group shaft and arrowhead
-      shape = new Group([shaft, arrowHead], {
-        ...shapeOptions,
-        fill: null // Group fill handled by individual objects
-      });
-      break;
-    }
-      
+        for (let i = 0; i < points * 2; i++) {
+          const radius = i % 2 === 0 ? outerRadius : innerRadius;
+          const angle = (i * Math.PI) / points;
+          starPoints.push({
+            x: radius * Math.cos(angle - Math.PI / 2),
+            y: radius * Math.sin(angle - Math.PI / 2),
+          });
+        }
 
-    case "ellipse":
-    case "oval":
-      shape = new Ellipse({
-        rx: shapeOptions.rx || shapeOptions.width / 2 || 60,
-        ry: shapeOptions.ry || shapeOptions.height / 2 || 40,
-        ...shapeOptions,
-      });
-      break;
-
-    case "polygon":
-    case "hexagon": {
-      const sides = shapeOptions.sides || 6;
-      const radius = shapeOptions.radius || 50;
-      const polygonPoints:any = [];
-      
-      for (let i = 0; i < sides; i++) {
-        const angle = (i * 2 * Math.PI) / sides;
-        polygonPoints.push({
-          x: radius * Math.cos(angle),
-          y: radius * Math.sin(angle)
+        shape = new Polygon(starPoints, {
+          ...shapeOptions,
         });
+        break;
       }
-      
-      shape = new Polygon(polygonPoints, {
-        ...shapeOptions,
-      });
-    }
-      break;
 
-    case "star": {
-      const outerRadius = shapeOptions.outerRadius || 50;
-      const innerRadius = shapeOptions.innerRadius || 25;
-      const points = shapeOptions.points || 5;
-      const starPoints:any = [];
-      
-      for (let i = 0; i < points * 2; i++) {
-        const radius = i % 2 === 0 ? outerRadius : innerRadius;
-        const angle = (i * Math.PI) / points;
-        starPoints.push({
-          x: radius * Math.cos(angle - Math.PI / 2),
-          y: radius * Math.sin(angle - Math.PI / 2)
+      case "diamond":
+      case "rhombus":
+        {
+          const size = shapeOptions.size || 50;
+          const diamondPoints = [
+            { x: 0, y: -size }, // top
+            { x: size, y: 0 }, // right
+            { x: 0, y: size }, // bottom
+            { x: -size, y: 0 }, // left
+          ];
+
+          shape = new Polygon(diamondPoints, {
+            ...shapeOptions,
+          });
+        }
+        break;
+
+      case "pentagon":
+        shape = addShape("polygon", { ...shapeOptions, sides: 5 });
+        return; // Early return to avoid duplicate processing
+
+      case "octagon":
+        shape = addShape("polygon", { ...shapeOptions, sides: 8 });
+        return; // Early return to avoid duplicate processing
+
+      case "heart": {
+        const heartSize = shapeOptions.size || 50;
+        const heartPath = `M ${heartSize},${heartSize * 0.3} 
+        C ${heartSize},${heartSize * 0.1} ${heartSize * 0.7},${
+          -heartSize * 0.1
+        } ${heartSize * 0.5},${heartSize * 0.1}
+        C ${heartSize * 0.3},${-heartSize * 0.1} 0,${heartSize * 0.1} 0,${
+          heartSize * 0.3
+        }
+        C 0,${heartSize * 0.5} ${heartSize * 0.5},${heartSize * 0.9} ${
+          heartSize * 0.5
+        },${heartSize * 0.9}
+        C ${heartSize * 0.5},${heartSize * 0.9} ${heartSize},${
+          heartSize * 0.5
+        } ${heartSize},${heartSize * 0.3} Z`;
+
+        shape = new Path(heartPath, {
+          ...shapeOptions,
+          scaleX: 1,
+          scaleY: 1,
         });
+        break;
       }
-      
-      shape = new Polygon(starPoints, {
-        ...shapeOptions,
-      });
-      break;
+      default:
+        console.warn(`Unsupported shape type: ${shapeType}`);
+        return;
     }
 
-    case "diamond":
-    case "rhombus": {
-      const size = shapeOptions.size || 50;
-      const diamondPoints = [
-        { x: 0, y: -size },      // top
-        { x: size, y: 0 },       // right
-        { x: 0, y: size },       // bottom
-        { x: -size, y: 0 }       // left
-      ];
-      
-      shape = new Polygon(diamondPoints, {
-        ...shapeOptions,
-      });
-    }
-      break;
+    if (!shape) return;
 
-    case "pentagon":
-      shape = addShape("polygon", { ...shapeOptions, sides: 5 });
-      return; // Early return to avoid duplicate processing
+    // Add shape to canvas
+    fabCanvas.add(shape);
 
-    case "octagon":
-      shape = addShape("polygon", { ...shapeOptions, sides: 8 });
-      return; // Early return to avoid duplicate processing
+    // Set as active object
+    fabCanvas.setActiveObject(shape);
 
-    case "heart": {
-      const heartSize = shapeOptions.size || 50;
-      const heartPath = `M ${heartSize},${heartSize * 0.3} 
-        C ${heartSize},${heartSize * 0.1} ${heartSize * 0.7},${-heartSize * 0.1} ${heartSize * 0.5},${heartSize * 0.1}
-        C ${heartSize * 0.3},${-heartSize * 0.1} 0,${heartSize * 0.1} 0,${heartSize * 0.3}
-        C 0,${heartSize * 0.5} ${heartSize * 0.5},${heartSize * 0.9} ${heartSize * 0.5},${heartSize * 0.9}
-        C ${heartSize * 0.5},${heartSize * 0.9} ${heartSize},${heartSize * 0.5} ${heartSize},${heartSize * 0.3} Z`;
-      
-      shape = new Path(heartPath, {
-        ...shapeOptions,
-        scaleX: 1,
-        scaleY: 1
-      });
-      break;
-    }
-    default:
-      console.warn(`Unsupported shape type: ${shapeType}`);
-      return;
-  }
+    // Update canvas
+    shape.setCoords();
+    fabCanvas.requestRenderAll();
 
-  if (!shape) return;
-
-  // Add shape to canvas
-  fabCanvas.add(shape);
-
-  // Set as active object
-  fabCanvas.setActiveObject(shape);
-
-  // Update canvas
-  shape.setCoords();
-  fabCanvas.requestRenderAll();
-
-  return shape;
-};
+    return shape;
+  };
 
   const copy = () => {
     if (!fabCanvas) return;
@@ -451,7 +453,7 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     if (!fabCanvas) return;
     const activeObjects = fabCanvas.getActiveObjects();
     setOpenTextOption(false);
-    setOpenShapeOptions(false)
+    setOpenShapeOptions(false);
     if (activeObjects.length) {
       activeObjects.forEach((obj) => fabCanvas.remove(obj));
       setIsActive(false);
@@ -536,83 +538,94 @@ const CanvasProvider = ({ children }: { children: ReactNode }) => {
     setAspect(w / h);
   };
 
-const exportCanvas = (format: "png" | "jpeg" | "svg", title: string, quality: number = 0.8, resolution:number=1) => {
-  try {
-    // console.log(`Exporting canvas as ${format}`);
-    // console.log(`Canvas dimensions: ${fabCanvas?.width}x${fabCanvas?.height}`);
-    console.log(quality)
+  const exportCanvas = (
+    format: "png" | "jpeg" | "svg",
+    title: string,
+    quality: number = 0.8,
+    resolution: number = 1
+  ) => {
+    try {
+      // console.log(`Exporting canvas as ${format}`);
+      // console.log(`Canvas dimensions: ${fabCanvas?.width}x${fabCanvas?.height}`);
+      console.log(quality);
 
-    if (!fabCanvas) {
-      throw new Error("Canvas is not initialized");
-    }
+      if (!fabCanvas) {
+        throw new Error("Canvas is not initialized");
+      }
 
-    let url: string;
-    let extension: string;
+      let url: string;
+      let extension: string;
 
-    if (format === "svg") {
-      // Clean text objects before export to avoid invalid properties
-      fabCanvas.getObjects().forEach((obj:any) => {
-        if (obj.type === "text" || obj.type === "i-text" || obj.type === "textbox") {
-          if (obj.textDecorationThickness) {
-            obj.set("textDecorationThickness", undefined); // Remove invalid property
+      if (format === "svg") {
+        // Clean text objects before export to avoid invalid properties
+        fabCanvas.getObjects().forEach((obj: any) => {
+          if (
+            obj.type === "text" ||
+            obj.type === "i-text" ||
+            obj.type === "textbox"
+          ) {
+            if (obj.textDecorationThickness) {
+              obj.set("textDecorationThickness", undefined); // Remove invalid property
+            }
           }
+        });
+        fabCanvas.renderAll();
+
+        let svgString = fabCanvas.toSVG({
+          suppressPreamble: false,
+          encoding: "UTF-8",
+        });
+
+        if (!svgString) {
+          throw new Error("Failed to generate SVG");
         }
-      });
-      fabCanvas.renderAll();
 
-      let svgString = fabCanvas.toSVG({
-        suppressPreamble: false,
-        encoding: "UTF-8",
-      });
+        // Sanitize SVG to remove invalid text-decoration-thickness
+        svgString = svgString = svgString
+          .replace(/text-decoration-thickness:[^;]+;/g, "")
+          .replace(/white-space:\s*pre;/g, "");
 
-      if (!svgString) {
-        throw new Error("Failed to generate SVG");
+        // Log SVG for debugging
+        console.log("Generated SVG:", svgString);
+
+        // Validate SVG string
+        if (!svgString.includes("<svg")) {
+          throw new Error("Invalid SVG output: Missing <svg> tag");
+        }
+
+        // Create a Blob from the SVG string
+        const blob = new Blob([svgString], {
+          type: "image/svg+xml;charset=utf-8",
+        });
+        url = URL.createObjectURL(blob);
+        extension = "svg";
+      } else {
+        url = fabCanvas.toDataURL({
+          format,
+          quality,
+          multiplier: resolution,
+        });
+        if (!url || url === "data:,") {
+          throw new Error(`Failed to generate ${format.toUpperCase()} image`);
+        }
+        extension = format;
       }
 
-      // Sanitize SVG to remove invalid text-decoration-thickness
-      svgString = svgString = svgString
-        .replace(/text-decoration-thickness:[^;]+;/g, "")
-        .replace(/white-space:\s*pre;/g, "");
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${title}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
 
-      // Log SVG for debugging
-      console.log("Generated SVG:", svgString);
-
-      // Validate SVG string
-      if (!svgString.includes("<svg")) {
-        throw new Error("Invalid SVG output: Missing <svg> tag");
+      if (format === "svg") {
+        URL.revokeObjectURL(url);
       }
-
-      // Create a Blob from the SVG string
-      const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
-      url = URL.createObjectURL(blob);
-      extension = "svg";
-    } else {
-      url = fabCanvas.toDataURL({
-        format,
-        quality,
-        multiplier: resolution,
-      });
-      if (!url || url === "data:,") {
-        throw new Error(`Failed to generate ${format.toUpperCase()} image`);
-      }
-      extension = format;
+    } catch (e) {
+      console.error("Export failed:", e);
+      throw e; // Rethrow for UI feedback
     }
-
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${title}.${extension}`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    if (format === "svg") {
-      URL.revokeObjectURL(url);
-    }
-  } catch (e) {
-    console.error("Export failed:", e);
-    throw e; // Rethrow for UI feedback
-  }
-};
+  };
 
   fabCanvas?.on("mouse:down", (e) => {
     const target = e.target;
@@ -627,6 +640,7 @@ const exportCanvas = (format: "png" | "jpeg" | "svg", title: string, quality: nu
     if (target.type == "image") {
       activeObject?.on("scaling", (e: any) => {
         const obj = e.target;
+        if (!obj) return;
         obj.set({
           opacity: 1,
         });
@@ -648,7 +662,7 @@ const exportCanvas = (format: "png" | "jpeg" | "svg", title: string, quality: nu
   const saveCanvasToLocalStorage = () => {
     if (!fabCanvas) return;
     const dataJSON = fabCanvas.toJSON();
-    console.log(dataJSON)
+    console.log(dataJSON);
     localStorage.setItem("savedCanvas", JSON.stringify(dataJSON));
   };
 
@@ -672,8 +686,6 @@ const exportCanvas = (format: "png" | "jpeg" | "svg", title: string, quality: nu
   //       fabCanvas?.dispose();
   //     };
   //   }, [fabCanvas])
-
-
 
   const value = {
     fabCanvas,

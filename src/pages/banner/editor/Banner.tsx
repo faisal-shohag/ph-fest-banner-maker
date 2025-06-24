@@ -1,10 +1,8 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
 import { Canvas } from "fabric";
 import { Toaster } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
-
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useCanvas } from "@/hooks/use-canvas";
 import api from "@/lib/api";
@@ -17,9 +15,7 @@ import ShapeEditOptions from "../editor-option/ShapeEditOption";
 import { CANVAS_CONFIG, useZoomControls } from "@/hooks/use-zoom-controlls";
 import { useCanvasSelection } from "@/hooks/use-canvas-selection";
 import { AlignGuidelines } from "fabric_guideline";
-
 import { canvasPresets } from '@/lib/constants'
-
 import '@/utils/canvas-history'
 
 type Template = {
@@ -54,6 +50,17 @@ const FabCanvas = ({
   const { setFabCanvas, fabCanvas } = useCanvas();
   const canvasRef = useRef<HTMLCanvasElement | null>(null) as any;
   const wrapperRef = useRef<HTMLDivElement | null>(null) as any;
+  const containerRef = useRef<HTMLDivElement | null>(null) as any;
+  
+  const [canvasDisplaySize, setCanvasDisplaySize] = useState({
+    width: 0,
+    height: 0,
+    scale: 1
+  });
+
+  // Flag to track if canvas size has been calculated
+  const [isSizeCalculated, setIsSizeCalculated] = useState(false);
+
   const {
     zoom,
     isZooming,
@@ -66,19 +73,86 @@ const FabCanvas = ({
 
   useCanvasSelection(fabCanvas);
 
+  // Calculate responsive canvas size (only once)
+  const calculateCanvasSize = useCallback(() => {
+    if (!containerRef.current || isSizeCalculated) return;
+
+    const container = containerRef.current;
+    const containerRect = container.getBoundingClientRect();
+    
+    // Get original canvas dimensions
+    const originalWidth = canvasPresets[template.type].width;
+    const originalHeight = canvasPresets[template.type].height;
+    
+    // Calculate available space (with some padding for zoom controls and UI)
+    const availableWidth = containerRect.width - 190; // 50px padding on each side
+    const availableHeight = containerRect.height - 200; // Space for zoom controls and padding
+    
+    // Calculate scale factors for both dimensions
+    const widthScale = availableWidth / originalWidth;
+    const heightScale = availableHeight / originalHeight;
+    
+    // Use the smaller scale to ensure the canvas fits in both dimensions
+    const scale = Math.min(widthScale, heightScale, 1); // Don't scale up beyond original size
+    
+    // Calculate display dimensions
+    const displayWidth = originalWidth * scale;
+    const displayHeight = originalHeight * scale;
+    
+    setCanvasDisplaySize({
+      width: displayWidth,
+      height: displayHeight,
+      scale: scale
+    });
+
+    // Mark size as calculated
+    setIsSizeCalculated(true);
+  }, [template, isSizeCalculated]);
+
+  // Calculate size only once when component mounts or template changes
   useEffect(() => {
-    if (!canvasRef.current) return;
+    // Reset the flag when template changes
+    setIsSizeCalculated(false);
+  }, [template.type]);
+
+  useEffect(() => {
+    if (!isSizeCalculated) {
+      calculateCanvasSize();
+    }
+  }, [calculateCanvasSize, isSizeCalculated]);
+
+  // Monitor container size changes only for initial calculation
+  useEffect(() => {
+    if (!containerRef.current || isSizeCalculated) return;
+    
+    const resizeObserver = new ResizeObserver(() => {
+      if (!isSizeCalculated) {
+        calculateCanvasSize();
+      }
+    });
+    
+    resizeObserver.observe(containerRef.current);
+    
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, [template.type, calculateCanvasSize, isSizeCalculated]);
+
+  useEffect(() => {
+    if (!canvasRef.current || canvasDisplaySize.width === 0) return;
 
     const canvas = new Canvas(canvasRef.current, {
       imageSmoothingEnabled: true,
       enableRetinaScaling: true,
       preserveObjectStacking: true,
+      // Use original dimensions for fabric.js canvas
       height: canvasPresets[template.type].height,
       width: canvasPresets[template.type].width,
     });
 
     const guideline = new AlignGuidelines({canvas});
     guideline.init();
+    
     canvas.loadFromJSON(template.canvas).then(() => {
       canvas.renderAll();
     });
@@ -88,7 +162,7 @@ const FabCanvas = ({
     return () => {
       canvas.dispose();
     };
-  }, [bgColor, setFabCanvas, isLoading, template]);
+  }, [bgColor, setFabCanvas, isLoading, template, canvasDisplaySize]);
 
   const handleMouseDown = (e: any) => {
     if (e.target === wrapperRef.current) {
@@ -104,7 +178,10 @@ const FabCanvas = ({
 
 
   return (
-    <div className="w-full flex flex-col justify-center items-center h-full relative">
+    <div 
+      ref={containerRef}
+      className="w-full flex flex-col justify-center items-center h-full relative"
+    >
       <ContextMenu>
         <ContextMenuTrigger>
           <div
@@ -116,8 +193,9 @@ const FabCanvas = ({
                 ? "transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
                 : "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
               transformOrigin: "center center",
-              width: canvasPresets[template.type].width,
-              height: canvasPresets[template.type].height,
+              // Use calculated display dimensions
+              width: canvasDisplaySize.width,
+              height: canvasDisplaySize.height,
               cursor: "grab",
             }}
             onMouseDown={handleMouseDown}
@@ -126,10 +204,17 @@ const FabCanvas = ({
             <canvas
               className="mx-auto block"
               ref={canvasRef}
-              width={canvasPresets[template.type].width}
-              height={canvasPresets[template.type].height}
+              // Use calculated display dimensions for the HTML canvas element
+              width={canvasDisplaySize.width}
+              height={canvasDisplaySize.height}
               style={{
                 boxShadow: "0 0 0 1px rgba(0,0,0,0.1)",
+                // Scale the canvas content to fit the display size
+                transform: `scale(${canvasDisplaySize.scale})`,
+                transformOrigin: "top left",
+                // Adjust the container to account for scaling
+                width: canvasPresets[template.type].width * canvasDisplaySize.scale,
+                height: canvasPresets[template.type].height * canvasDisplaySize.scale,
               }}
             />
           </div>
@@ -148,25 +233,29 @@ const FabCanvas = ({
         minZoom={CANVAS_CONFIG.MIN_ZOOM}
         maxZoom={CANVAS_CONFIG.MAX_ZOOM}
       />
+      
+      {/* Optional: Display canvas info */}
+      <div className="absolute bottom-4 left-4 text-xs text-gray-500 bg-white bg-opacity-75 px-2 py-1 rounded">
+        {canvasPresets[template.type].width} × {canvasPresets[template.type].height} 
+        {canvasDisplaySize.scale < 1 && ` (${Math.round(canvasDisplaySize.scale * 100)}%)`}
+      </div>
     </div>
   );
 };
 
 const Banner = () => {
   const { id } = useParams();
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["editor-template"],
-    staleTime: 0,
-    queryFn: async () => {
-      const response = await api.get(`/template/${id}`);
-      return response.data;
-    },
-  });
-
-  const template = data as Template | null;
-
-  if (error) return <div>Error occurred!</div>;
+    useEffect(() => {
+        async function getTemplate(){
+          const response = await api.get(`/template/${id}`);
+          setIsLoading(false)
+          setTemplate(response.data);
+        }
+        getTemplate()
+  }, [id])
 
   return (
     <div className="flex">

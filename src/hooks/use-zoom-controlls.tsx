@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export const CANVAS_CONFIG = {
   DEFAULT_WIDTH: 800,
@@ -16,12 +16,12 @@ export const useZoomControls = (wrapperRef: React.RefObject<HTMLDivElement>) => 
   const [isZooming, setIsZooming] = useState(false);
   const throttledZoom = useRef<NodeJS.Timeout | null>(null);
 
-  const resetZoom = () => {
+  const resetZoom = useCallback( () => {
     setZoom(1);
     if (wrapperRef.current) {
       wrapperRef.current.style.transformOrigin = "center center";
     }
-  };
+  }, [wrapperRef]);
 
   const zoomIn = () => {
     const newZoom = Math.min(zoom * 1.1, CANVAS_CONFIG.MAX_ZOOM);
@@ -100,7 +100,7 @@ export const useZoomControls = (wrapperRef: React.RefObject<HTMLDivElement>) => 
         clearTimeout(throttledZoom.current);
       }
     };
-  }, [zoom]);
+  }, [zoom, resetZoom, wrapperRef]);
 
   return {
     zoom,

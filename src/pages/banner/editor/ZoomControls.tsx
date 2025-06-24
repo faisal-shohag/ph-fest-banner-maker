@@ -25,7 +25,7 @@ export const ZoomControls = ({
   const maxPercentage = Math.round(maxZoom * 100);
 
   return (
-    <div className="mt-4 z-40 flex items-center gap-3 bg-white border dark:bg-zinc-900 rounded-lg px-4 py-2 shadow-sm">
+    <div className="mt-4 z-40 flex items-center gap-3 bg-white border dark:bg-zinc-900 rounded-lg px-4 py-2 shadow-sm fixed bottom-5 right-1">
       {/* Zoom Out Button */}
       <button
         onClick={onZoomOut}

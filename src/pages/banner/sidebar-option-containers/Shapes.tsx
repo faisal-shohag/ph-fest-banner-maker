@@ -129,16 +129,18 @@ const Shapes = ({ userId = 1 }) => {
         loadedSVG.options
       );
       svgGroup.set({
-        scaleY: 1,
-        scaleX: 1,
+        scaleY: 0.5,
+        scaleX: 0.5,
         originX: "center",
         originY: "center",
+        fill: 'blue',
         visible: true,
         centeredScaling: true,
         selectable: true,
       });
       fabCanvas.add(svgGroup);
       fabCanvas.centerObject(svgGroup);
+      fabCanvas.setActiveObject(svgGroup)
       fabCanvas.renderAll();
     } catch (error) {
       console.error("Error loading SVG:", error);

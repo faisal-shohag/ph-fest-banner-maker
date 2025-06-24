@@ -33,18 +33,7 @@ export const CanvasContextMenu = ({ onResetZoom }: CanvasContextMenuProps) => {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Copy: Ctrl+C or Cmd+C
-      if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
-        event.preventDefault();
-        copy();
-      }
-      // Paste: Ctrl+V or Cmd+V
-      else if ((event.ctrlKey || event.metaKey) && event.key === 'v') {
-        event.preventDefault();
-        paste();
-      }
-      // Duplicate: Ctrl+D or Cmd+D
-      else if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+     if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
         event.preventDefault();
         duplicate();
       }
