@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog"
 import { useCanvas } from "@/hooks/use-canvas";
 import CreateNewCanvas from "@/components/common/CreateNewCanvas";
+import SidebarGallerView from "@/components/skeletons/SidebarGallerView";
 
 const fetchTemplates = async ({ pageParam = 1, queryKey }) => {
   const [, search] = queryKey;
@@ -39,7 +40,7 @@ const TemplateCard = ({ template, handleDialogOpen }) => {
           <img
             src={template.photoURL}
             alt={template.title}
-            className="w-full h-full  object-cover group-hover:scale-105 transition-transform duration-200"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center">
@@ -70,18 +71,6 @@ const Design = () => {
   const [open, setOpen] = useState(false)
   const [selectedTemplate, setSelectedTemplate] = useState(null) as any;
   const {fabCanvas} = useCanvas()
-
-  // Debounce search term
-//   const debouncedSetSearch = useCallback(
-//     debounce((term) => {
-//       setDebouncedSearchTerm(term);
-//     }, 500),
-//     []
-//   );
-
-//   useEffect(() => {
-//     debouncedSetSearch(searchTerm);
-//   }, [searchTerm, debouncedSetSearch]);
 
   const {
     data,
@@ -248,7 +237,7 @@ const handleOverride = () => {
           )}
         </div>
       )}
-  </div> : <div>Loading....</div>}
+  </div> : <SidebarGallerView/>}
       
 
 
@@ -265,7 +254,7 @@ const handleOverride = () => {
 
      <DialogFooter className="sm:justify-start">
       <Button onClick={handleOverride}>Yes</Button>
-      <CreateNewCanvas func={setOpen} template={selectedTemplate}/>
+      <CreateNewCanvas btnText="No, Create new with this template" func={setOpen} template={selectedTemplate}/>
         </DialogFooter>
   </DialogContent>
 </Dialog>

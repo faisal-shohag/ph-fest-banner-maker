@@ -48,9 +48,11 @@ interface TemplateResponse {
 const CreateNewCanvas = ({
   func,
   template,
+  btnText,
 }: {
   func?: (boolean) => void;
   template?: any;
+  btnText:string
 }) => {
   const navigate = useNavigate();
   const { user } = use(AuthContext) as any;
@@ -102,12 +104,12 @@ const CreateNewCanvas = ({
   return (
     <div>
       <Button
-        className="custom-glass text-black dark:text-white px-10 cursor-pointer"
+        className=" w-full g-card bg-gradient-to-l from-[#8b4eee] via-[#322fcf] to-[#db30db] px-10 cursor-pointer"
         onClick={handleCreateCanvas}
         disabled={createTemplateMutation.isPending}
       >
         <FaWandMagicSparkles />
-        {createTemplateMutation.isPending ? "Creating..." : "Create New Canvas"}
+        {createTemplateMutation.isPending ? "Creating..." : btnText}
       </Button>
     </div>
   );

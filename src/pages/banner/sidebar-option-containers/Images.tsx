@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import SidebarGallerView from "@/components/skeletons/SidebarGallerView";
+import ErrorState from "@/components/common/ErrorState";
 
 interface ImageType {
   id: number;
@@ -50,7 +52,6 @@ const Images = ({ handleImageFromURL }) => {
     isFetchingNextPage,
     isLoading,
     isError,
-    error,
   } = useInfiniteQuery({
     queryKey: ["images"],
     queryFn: async ({ pageParam = 1 }) => {
@@ -116,37 +117,12 @@ const Images = ({ handleImageFromURL }) => {
   };
 
   if (isLoading) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {[...Array(8)].map((_, index) => (
-            <div
-              key={index}
-              className="bg-gray-200 dark:bg-gray-700 rounded-lg aspect-square animate-pulse"
-            />
-          ))}
-        </div>
-      </div>
-    );
+    return <SidebarGallerView/>
   }
 
 
   if (isError) {
-    return (
-      <div className="max-w-7xl mx-auto p-6">
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">
-          Image Gallery
-        </h1>
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p className="font-medium">Error loading images</p>
-          <p className="text-sm mt-1">
-            {error instanceof Error
-              ? error.message
-              : "An unexpected error occurred"}
-          </p>
-        </div>
-      </div>
-    );
+    return <ErrorState/>
   }
 
   return (

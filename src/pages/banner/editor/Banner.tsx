@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "react-router";
 import { Canvas } from "fabric";
-import { Toaster } from "react-hot-toast";
 import { Loader2 } from "lucide-react";
 import { ContextMenu, ContextMenuTrigger } from "@/components/ui/context-menu";
 import { useCanvas } from "@/hooks/use-canvas";
@@ -280,8 +279,6 @@ const Banner = () => {
         {isLoading && <LoadingOverlay />}
         {template && <FabCanvas template={template} isLoading={isLoading} />}
       </div>
-
-      <Toaster />
     </div>
   );
 };

@@ -6,6 +6,8 @@ import {
   AlignLeftIcon,
   AlignRightIcon,
 } from "lucide-react";
+import { FaFileAlt, FaPalette } from "react-icons/fa";
+import { FaDesktop, FaInstagram, FaRegImage } from "react-icons/fa6";
 
 export const fontFamily = [
   { title: "Aladin", family: '"Aladin", cursive', sample: "AaBbzZ" },
@@ -374,12 +376,54 @@ export const isSVGString = (svg) => {
 };
 
 export const canvasPresets = {
-  instagramPost: { width: 1080, height: 1080 },
+  instagramPost: {
+    name: "Instagram Post",
+    width: 1080,
+    height: 1080,
+    description: "Perfect square format for Instagram posts",
+    icon: FaInstagram,
+  },
   twitterPost: { width: 1200, height: 675 },
-  normal: { width: 800, height: 600 }, 
-  logo: { width: 500, height: 500 }, 
-  a4Portrait: { width: 794, height: 1123 },
-  a4Landscape: { width: 1123, height: 794 },
-  socialPost: { width: 1080, height: 1080 }, 
-  presentation: { width: 1280, height: 720 },
+  normal: {
+    name: "Standard Canvas",
+    width: 800,
+    height: 600,
+    description: "Versatile canvas for any design",
+    icon: FaPalette,
+  },
+  logo: {
+    name: "Logo Design",
+    width: 500,
+    height: 500,
+    description: "Perfect square for logo creation",
+    icon: FaPalette,
+  },
+  a4Portrait: {
+    name: "A4 Portrait",
+    width: 794,
+    height: 1123,
+    description: "Standard document format",
+    icon: FaFileAlt,
+  },
+  a4Landscape: {
+    name: "A4 Landscape",
+    width: 1123,
+    height: 794,
+    description: "Horizontal document layout",
+    icon: FaFileAlt,
+  },
+  socialPost: {
+    name: "Social Media",
+    width: 1080,
+    height: 1080,
+    description: "Universal social media format",
+    icon: FaRegImage,
+  },
+  presentation: {
+    name: "Presentation",
+    width: 1280,
+    height: 720,
+    description: "HD presentation slides",
+    icon: FaDesktop,
+  },
 };

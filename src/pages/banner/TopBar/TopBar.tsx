@@ -2,7 +2,7 @@ import AvatarDisplay from "@/components/common/AvatarDisplay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts-providers/auth-context";
-import { Check, Download, InfoIcon, Loader, Save } from "lucide-react";
+import { Check, Download, InfoIcon, Loader2, Save } from "lucide-react";
 import { use, useEffect, useState } from "react";
 
 import {
@@ -405,7 +405,7 @@ const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publi
             )}
 
             <Button onClick={handleSaveCanvas} variant={"outline"} className="w-full mt-2">
-            {isSaving ? <span className="animate-spin"><Loader/></span> : <Check /> } Done
+            {isSaving ? <span className="animate-spin"><Loader2/> Saving...</span> : <Check /> } Done
             </Button>
           </div>
         </div>

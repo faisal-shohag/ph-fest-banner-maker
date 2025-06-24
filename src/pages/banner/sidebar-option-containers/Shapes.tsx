@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import toast from "react-hot-toast";
+import SidebarGallerView from "@/components/skeletons/SidebarGallerView";
 
 const Shapes = ({ userId = 1 }) => {
   // Assuming we have userId from context/props
@@ -333,9 +334,7 @@ const Shapes = ({ userId = 1 }) => {
 
           {/* Loading more indicator */}
           {isFetchingNextPage && (
-            <div className="flex justify-center py-4">
-              <Loader2 className="animate-spin" size={20} />
-            </div>
+           <SidebarGallerView/>
           )}
         </div>
       </div>
@@ -378,7 +377,7 @@ const Shapes = ({ userId = 1 }) => {
                 </Label>
                 <div className="space-y-2">
                   {/* File Upload */}
-                  <div>
+                  <div className="hidden">
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -396,8 +395,7 @@ const Shapes = ({ userId = 1 }) => {
                     </button>
                   </div>
 
-                  <div className="text-center text-gray-500 text-sm">or</div>
-
+                 
                   {/* Text Input */}
                   <Textarea
                     value={formData.svg}
@@ -550,8 +548,9 @@ const Shapes = ({ userId = 1 }) => {
                 </Button>
                 <Button
                   type="submit"
+                  variant={'outline'}
                   disabled={createShapeMutation.isPending}
-                  className=" bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="y-2 rounded-lg hover:bg-green-600 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {createShapeMutation.isPending ? (
                     <>
