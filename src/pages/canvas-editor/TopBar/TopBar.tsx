@@ -2,9 +2,9 @@ import AvatarDisplay from "@/components/common/AvatarDisplay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AuthContext } from "@/contexts-providers/auth-context";
-import { Check, Download, InfoIcon, Loader2, Save } from "lucide-react";
+import { Check, Download, InfoIcon, Loader2, LogOutIcon, Save } from "lucide-react";
 import { use, useEffect, useState } from "react";
-
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
@@ -46,7 +46,7 @@ import { Textarea } from "@/components/ui/textarea";
 const TopBar = ({ template}) => {
   const [editTitle, setEditTitle] = useState(false);
   const [title, setTitle] = useState(template.title);
-  const { user } = use(AuthContext) as any;
+  const { user, logout } = use(AuthContext) as any;
   const { isActive, opacity, handleObjectOpacity, fabCanvas } = useCanvas();
   const [isSaving, setIsSaving] = useState(false);
 
@@ -170,7 +170,31 @@ const TopBar = ({ template}) => {
         </div>
       </div>
       <div className="flex gap-3 items-center">
-        <AvatarDisplay user={user} />
+        <div>
+              <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      
+                          <AvatarDisplay user={user} />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem>
+                        {user.displayName}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-xs">
+                        {user.email}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator/>
+                      <DropdownMenuItem
+                        onClick={() => logout()}
+                        className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
+                      >
+                        <LogOutIcon className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+         
+        </div>
         <div className="flex gap-2">
           <ExportModal title={title} />
 

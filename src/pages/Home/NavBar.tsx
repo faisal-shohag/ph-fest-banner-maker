@@ -6,8 +6,10 @@ import { Link, useLocation } from "react-router";
 import { FaHandshakeAngle } from "react-icons/fa6";
 import { ThemeToggle } from "@/components/ui/toggle-theme";
 import { RiHomeFill } from "react-icons/ri";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { LogOutIcon } from "lucide-react";
 const NavBar = () => {
-  const { user } = use(AuthContext) as any;
+  const { user, logout } = use(AuthContext) as any;
   const location = useLocation()
   const navlinks = [
      {
@@ -57,7 +59,29 @@ const NavBar = () => {
         <div className="flex items-center gap-3">
           {user ? (
             <div>
-              <AvatarDisplay user={user} />
+               <DropdownMenu>
+                    <DropdownMenuTrigger>
+                      
+                          <AvatarDisplay user={user} />
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                      <DropdownMenuItem>
+                        {user.displayName}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-xs">
+                        {user.email}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator/>
+                      <DropdownMenuItem
+                        onClick={() => logout()}
+                        className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
+                      >
+                        <LogOutIcon className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+         
             </div>
           ) : null}
 
