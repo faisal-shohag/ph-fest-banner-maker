@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import api from "@/lib/api";
 import { EllipsisVerticalIcon, Trash2Icon } from "lucide-react";
 import {
@@ -22,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import SidebarGallerView from "@/components/skeletons/SidebarGallerView";
 import ErrorState from "@/components/common/ErrorState";
+import { IoSparkles } from "react-icons/io5";
 
 interface ImageType {
   id: number;
@@ -30,6 +35,7 @@ interface ImageType {
   createdAt: string;
   meta?: any;
   userId: number;
+  type: string;
 }
 
 interface ImageResponse {
@@ -68,7 +74,7 @@ const Images = ({ handleImageFromURL }) => {
 
   // Delete mutation
   const deleteMutation = useMutation({
-    mutationFn: async (image:ImageType) => {
+    mutationFn: async (image: ImageType) => {
       await api.delete(`/image/${image.id}/${image.meta.fileId}`);
     },
     onSuccess: () => {
@@ -117,12 +123,11 @@ const Images = ({ handleImageFromURL }) => {
   };
 
   if (isLoading) {
-    return <SidebarGallerView/>
+    return <SidebarGallerView />;
   }
 
-
   if (isError) {
-    return <ErrorState/>
+    return <ErrorState />;
   }
 
   return (
@@ -174,7 +179,7 @@ const Images = ({ handleImageFromURL }) => {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem 
+                      <DropdownMenuItem
                         onClick={() => handleDeleteClick(image)}
                         className="text-red-600 focus:text-red-600 focus:bg-red-50 dark:focus:bg-red-950"
                       >
@@ -184,6 +189,12 @@ const Images = ({ handleImageFromURL }) => {
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
+
+                {image.type === "ai" && (
+                  <div className="absolute left-2 top-2 z-20 bg-gradient-to-br rounded-full text-white p-1 from-blue-500 shadow-xl via-indigo-400 to-purple-500">
+                    <IoSparkles />
+                  </div>
+                )}
                 <div
                   className="aspect-square overflow-hidden relative bg-gray-100 dark:bg-zinc-800 cursor-pointer"
                   onClick={() => handleImageFromURL(image.url)}
@@ -247,7 +258,8 @@ const Images = ({ handleImageFromURL }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Image</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this image? This action cannot be undone.
+              Are you sure you want to delete this image? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

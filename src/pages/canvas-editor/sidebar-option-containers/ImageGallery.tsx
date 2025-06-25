@@ -21,6 +21,7 @@ const ImageGallery = ({handleImageFromURL}) => {
       url: string;
       userId: string;
       meta: any;
+      type: string,
     }) => {
       const response = await api.post("/image", imageData);
       return response.data;
@@ -119,6 +120,7 @@ const ImageGallery = ({handleImageFromURL}) => {
         url: result.url,
         userId: user?.id,
         meta: result,
+        type: 'normal'
       };
 
       saveImageMutation.mutate(imageData);

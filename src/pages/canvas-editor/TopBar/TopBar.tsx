@@ -39,11 +39,13 @@ import {
 } from "@/components/ui/tooltip";
 import toast from "react-hot-toast";
 import UndoRedo from "./UndoRedo";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 
-const TopBar = ({ templateTitle, templateId , tags, publish}) => {
+const TopBar = ({ template}) => {
   const [editTitle, setEditTitle] = useState(false);
-  const [title, setTitle] = useState(templateTitle);
+  const [title, setTitle] = useState(template.title);
   const { user } = use(AuthContext) as any;
   const { isActive, opacity, handleObjectOpacity, fabCanvas } = useCanvas();
   const [isSaving, setIsSaving] = useState(false);
@@ -67,12 +69,12 @@ const TopBar = ({ templateTitle, templateId , tags, publish}) => {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await api.put(`/template/${templateId}`, { ...data });
+      const response = await api.put(`/template/${template.id}`, { ...data });
       return response.data;
     },
     onSuccess: (data) => {
       console.log("Updated template...");
-      if (data.title.trim() != templateTitle.trim()) {
+      if (data.title.trim() != template.title.trim()) {
         queryClient.invalidateQueries({ queryKey: ["recent-templates"] });
         setIsSaving(false);
         return;
@@ -95,7 +97,7 @@ const TopBar = ({ templateTitle, templateId , tags, publish}) => {
     if (newTitle.length < 3) {
       return;
     }
-    if (templateTitle.trim() === newTitle.trim()) return;
+    if (template.title.trim() === newTitle.trim()) return;
     mutation.mutate({ title: newTitle.trim() });
   };
 
@@ -177,8 +179,7 @@ const TopBar = ({ templateTitle, templateId , tags, publish}) => {
             title={title}
             isSaving={isSaving}
             setIsSaving={setIsSaving}
-            templateTags={tags}
-            publish={publish}
+            template={template}
           />
         </div>
       </div>
@@ -288,11 +289,12 @@ const ExportModal = ({ title }) => {
   );
 };
 
-const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publish }) => {
+const SaveModal = ({ mutation, title, isSaving, setIsSaving, template}) => {
   const { fabCanvas } = useCanvas();
-  const [isPublish, setIsPublish] = useState(publish);
+  const [isPublish, setIsPublish] = useState(template.isPublic);
   const [dataURL, setDataURL] = useState(null) as any;
-  const [tags, setTags] = useState(templateTags);
+  const [tags, setTags] = useState(template.tags);
+  const [description, setDescription] = useState(template.description)
   // const [uploadStatus, setUploadStatus] = useState("");
 
   const handleSaveCanvas = async () => {
@@ -319,7 +321,7 @@ const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publi
     const data = {
       photoURL: result.url,
       photoMeta: result,
-      tags
+      tags, description,
     };
     
     const canvas = fabCanvas.toJSON()
@@ -358,7 +360,7 @@ const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publi
             )}
 
             <div className="flex justify-between items-center">
-              <div className="text-xs flex gap-1">
+              <Label className="text-xs flex gap-1">
                 Publish?
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -370,13 +372,13 @@ const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publi
                     <p>Your template will be visible to all users!</p>
                   </TooltipContent>
                 </Tooltip>
-              </div>
+              </Label>
               <Switch checked={isPublish} onCheckedChange={setIsPublish} />
             </div>
 
             {isPublish && (
               <div className="space-y-2">
-                <label className="text-xs flex items-center gap-1">
+                <Label className="text-xs flex items-center gap-1">
                   <span> Tags</span>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -391,7 +393,7 @@ const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publi
                       </p>
                     </TooltipContent>
                   </Tooltip>
-                </label>
+                </Label>
 
                 <TagsInput
                   value={tags}
@@ -401,11 +403,14 @@ const SaveModal = ({ mutation, title, isSaving, setIsSaving, templateTags, publi
                 <p className="text-xs text-muted-foreground">
                   Current tags: {JSON.stringify(tags)}
                 </p>
+
+                <Label className="text-xs">Description</Label>
+                <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description"/>
               </div>
             )}
 
             <Button onClick={handleSaveCanvas} variant={"outline"} className="w-full mt-2">
-            {isSaving ? <span className="animate-spin"><Loader2/> Saving...</span> : <Check /> } Done
+            {isSaving ? <div className="flex items-center gap-1"><span className="animate-spin"><Loader2/> </span> Saving...</div> : <div className="flex items-center gap-1"><Check /> Done</div> } 
             </Button>
           </div>
         </div>

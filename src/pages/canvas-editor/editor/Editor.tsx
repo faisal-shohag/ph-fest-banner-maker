@@ -234,7 +234,7 @@ const FabCanvas = ({
       />
       
       {/* Optional: Display canvas info */}
-      <div className="absolute bottom-4 left-4 text-xs text-gray-500 bg-white bg-opacity-75 px-2 py-1 rounded">
+      <div className="absolute bottom-4 left-4 text-xs text-gray-500  bg-opacity-75 px-2 py-1 rounded">
         {canvasPresets[template.type].width} × {canvasPresets[template.type].height} 
         {canvasDisplaySize.scale < 1 && ` (${Math.round(canvasDisplaySize.scale * 100)}%)`}
       </div>
@@ -260,10 +260,7 @@ const Editor = () => {
     <div className="flex">
       {template ? (
         <TopBar
-          templateTitle={template.title}
-          templateId={template.id}
-          tags={template.tags}
-          publish={template.isPublic}
+          template={template}
         />
       ) : (
         <div className="fixed pl-20 dark:bg-zinc-900 bg-zinc-100 shadow-2xl py-2 px-7 z-[9] w-full h-14 flex justify-between" />

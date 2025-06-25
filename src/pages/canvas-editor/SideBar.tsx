@@ -8,6 +8,8 @@ import Shapes from "./sidebar-option-containers/Shapes";
 import Text from "./sidebar-option-containers/Text";
 import ImageGallery from "./sidebar-option-containers/ImageGallery";
 import { useCanvas } from "@/hooks/use-canvas";
+import FluxImageGenerator from "./sidebar-option-containers/ImageGeneration";
+import { IoSparkles } from "react-icons/io5";
 
 const SideBar = () => {
   const [isContainerOpen, setIsContainerOpen] = useState(false);
@@ -40,7 +42,7 @@ const SideBar = () => {
           setActiveOption(null);
         }}
       />     
-      <div className="z-[9999] dark:bg-zinc-900  bg-zinc-100 py-5 flex flex-col gap-5 min-w-[75px] max-w-[200px] justify-between">
+      <div className="z-[9999] dark:bg-zinc-900  bg-zinc-100 py-5 flex flex-col gap-5 min-w-[75px] max-w-[300px] justify-between">
         <div className="flex flex-col gap-10 pt-20">
 
           <div className="absolute top-3 left-5">
@@ -101,6 +103,21 @@ const SideBar = () => {
             </div>
             <div className="text-xs font-bold">Images</div>
           </div>
+
+
+           <div 
+            className={`flex flex-col items-center gap-1 relative cursor-pointer p-2 rounded-2xl ${
+              activeOption === 'imageAi' 
+                ? 'bg-orange-200 dark:bg-zinc-600' 
+                : 'hover:bg-orange-200 dark:hover:bg-zinc-700'
+            }`}
+            onClick={() => handleOptionClick('imageAi')}
+          >
+            <div className={`${activeOption === "imageAi" ? "sidebar-active" : ""}`}>
+              <IoSparkles size={20} />
+            </div>
+            <div className="text-xs font-bold">Ai</div>
+          </div>
         </div>
 
         <div className="flex flex-col items-center pb-10">
@@ -133,6 +150,8 @@ const FloatingContainer = ({ isOpen, activeOption }: FloatingContainerProps) => 
         return <Text />;
       case 'Images':
         return <ImageGallery handleImageFromURL={handleImageFromURL}/>;
+      case 'imageAi':
+        return <FluxImageGenerator/>;
       default:
         return <div>Select an option</div>;
     }
