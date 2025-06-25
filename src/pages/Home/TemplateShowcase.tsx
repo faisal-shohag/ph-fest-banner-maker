@@ -28,7 +28,7 @@ const TemplateShowcase = () => {
   </>
 
   return (
-    <div className="w-full">
+    <div className="w-full py-10">
       <Heading Icon={MdWidgets} title={'Templates'} subtitle={'Find inspiration for your next project.'}/>
       <div>
         {isLoading

@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button.tsx";
 import { useMutation } from "@tanstack/react-query";
-import { Navigate, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { toast } from "sonner"; // or your preferred toast library
 import api from "@/lib/api.ts";
 import { use } from "react";
@@ -83,7 +83,7 @@ const CreateNewCanvas = ({
 
   const handleCreateCanvas = async () => {
     if (!user) {
-      return <Navigate state={{ from: location.pathname }} to="/auth/login" />;
+      return navigate('/auth/login');
     }
     const userId = user.id;
 

@@ -7,17 +7,32 @@ import { useCanvas } from "@/hooks/use-canvas";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import api from "@/lib/api";
 import { imageKit } from "@/lib/constants";
-import { Sparkles, Download, Wand2, Image as ImageIcon, Palette, Zap } from "lucide-react";
+import {
+  Sparkles,
+  Download,
+  Wand2,
+  Image as ImageIcon,
+  Palette,
+  Zap,
+  Loader2Icon,
+} from "lucide-react";
 import { BiImageAdd } from "react-icons/bi";
 
 const FluxImageGenerator = () => {
-  const [prompt, setPrompt] = useState("a cute cat holding a sign written, 'Hero Canvas.'");
+  const [prompt, setPrompt] = useState(
+    "a cute cat holding a sign written, 'Hero Canvas.'"
+  );
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [selectedSize, setSelectedSize] = useState({ name: "Square", width: 1024, height: 1024 });
+  const [isRemoving, setIsRemoving] = useState(false);
+  const [selectedSize, setSelectedSize] = useState({
+    name: "Square",
+    width: 1024,
+    height: 1024,
+  });
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
-  
+
   const { fabCanvas, handleImageFromURL } = useCanvas();
   const { user } = use(AuthContext) as any;
   const queryClient = useQueryClient();
@@ -30,10 +45,15 @@ const FluxImageGenerator = () => {
   ];
 
   // Add canvas size if available
-  const allSizes = fabCanvas 
+  const allSizes = fabCanvas
     ? [
-        { name: "Canvas", width: fabCanvas.width, height: fabCanvas.height, icon: "🎨" },
-        ...predefinedSizes
+        {
+          name: "Canvas",
+          width: fabCanvas.width,
+          height: fabCanvas.height,
+          icon: "🎨",
+        },
+        ...predefinedSizes,
       ]
     : predefinedSizes;
 
@@ -44,24 +64,26 @@ const FluxImageGenerator = () => {
       url: string;
       userId: string;
       meta: any;
-      type: string,
+      type: string;
     }) => {
       const response = await api.post("/image", imageData);
       return response.data;
     },
     onSuccess: (data) => {
-      handleImageFromURL(data.url)
+      handleImageFromURL(data.url);
       setUploadStatus("Upload and save successful!");
-      
+
       // Invalidate and refetch images query if you have one
       queryClient.invalidateQueries({ queryKey: ["images"] });
-      
+
       // Clear status after 3 seconds
       setTimeout(() => setUploadStatus(""), 3000);
     },
     onError: (error: any) => {
       console.error("Database save error:", error);
-      setUploadStatus(`Save failed: ${error.response?.data?.error || error.message}`);
+      setUploadStatus(
+        `Save failed: ${error.response?.data?.error || error.message}`
+      );
       setTimeout(() => setUploadStatus(""), 5000);
     },
     onSettled: () => {
@@ -112,7 +134,9 @@ const FluxImageGenerator = () => {
 
     try {
       const resizedBlob: any = await resizeImage(imageBlob, 1920, 1080);
-      const resizedFile = new File([resizedBlob], fileName, { type: "image/png" });
+      const resizedFile = new File([resizedBlob], fileName, {
+        type: "image/png",
+      });
 
       // Upload to ImageKit
       const result = await imageKit.upload({
@@ -129,11 +153,10 @@ const FluxImageGenerator = () => {
         url: result.url,
         userId: user?.id,
         meta: result,
-        type: 'ai',
+        type: "ai",
       };
 
       saveImageMutation.mutate(imageData);
-
     } catch (error: any) {
       console.error("ImageKit upload error:", error);
       setUploadStatus(`Upload failed: ${error.message}`);
@@ -170,9 +193,9 @@ const FluxImageGenerator = () => {
 
   const downloadImage = () => {
     if (imageUrl) {
-      const link = document.createElement('a');
+      const link = document.createElement("a");
       link.href = imageUrl;
-      link.setAttribute('target', '_blank')
+      link.setAttribute("target", "_blank");
       link.download = `generated-image-${Date.now()}.png`;
       link.click();
     }
@@ -180,7 +203,9 @@ const FluxImageGenerator = () => {
 
   const handleAddToDatabaseAndCanvas = async () => {
     if (!imageUrl || !user?.id) {
-      setUploadStatus("Please ensure you're logged in and have an image generated");
+      setUploadStatus(
+        "Please ensure you're logged in and have an image generated"
+      );
       setTimeout(() => setUploadStatus(""), 3000);
       return;
     }
@@ -189,17 +214,35 @@ const FluxImageGenerator = () => {
       // Convert image URL to blob
       const response = await fetch(imageUrl);
       const blob = await response.blob();
-      
+
       // Generate filename
       const fileName = `flux-generated-${Date.now()}.png`;
-      
+
       // Upload to ImageKit and save to database
       await uploadToImageKit(blob, fileName);
-      
     } catch (error) {
       console.error("Error adding image to database:", error);
       setUploadStatus("Failed to add image to database");
       setTimeout(() => setUploadStatus(""), 3000);
+    }
+  };
+
+  const handleRemoveBg = async () => {
+    setIsRemoving(true);
+    const url = await fetch(imageUrl as any);
+    const image = await url.blob();
+    const client = await Client.connect("not-lain/background-removal");
+    try {
+      const result = await client.predict("/image", {
+        image: image,
+      });
+      if (result.data && result.data[0]) {
+        setImageUrl(result.data[0][0].url);
+      }
+      setIsRemoving(false);
+    } catch (error) {
+      setIsRemoving(false);
+      console.log(error);
     }
   };
 
@@ -284,8 +327,6 @@ const FluxImageGenerator = () => {
           {/* Image Display */}
           <div className="space-y-3">
             <div className="bg-white/70 dark:bg-slate-800/70 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/20 dark:border-slate-700/20">
-            
-
               <div className="relative">
                 {loading && (
                   <div className="aspect-square bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 rounded-2xl flex items-center justify-center">
@@ -298,14 +339,21 @@ const FluxImageGenerator = () => {
                       <div className="">
                         <div className="text-slate-600 dark:text-slate-300 font-medium text-sm">
                           Crafting your vision...
-                        
                         </div>
-                          <span className="text-xs">It can take a bit longer...</span>
+                        <span className="text-xs">
+                          It can take a bit longer...
+                        </span>
                         <div className="flex justify-center mt-5">
                           <div className="flex space-x-1">
                             <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                            <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                            <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                            <div
+                              className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"
+                              style={{ animationDelay: "0.1s" }}
+                            ></div>
+                            <div
+                              className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce"
+                              style={{ animationDelay: "0.2s" }}
+                            ></div>
                           </div>
                         </div>
                       </div>
@@ -315,6 +363,7 @@ const FluxImageGenerator = () => {
 
                 {imageUrl && !loading && (
                   <div className="relative group">
+                       <Button onClick={downloadImage} variant={'outline'} size={'icon'} className="absolute right-1 z-40"><Download size={17}/></Button>
                     <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                     <img
                       src={imageUrl}
@@ -322,7 +371,7 @@ const FluxImageGenerator = () => {
                       className="w-full rounded-2xl shadow-2xl group-hover:scale-[1.02] transition-transform duration-500"
                       style={{
                         aspectRatio: `${selectedSize.width}/${selectedSize.height}`,
-                        objectFit: 'cover'
+                        objectFit: "cover",
                       }}
                     />
                     <div className="absolute inset-0 rounded-2xl shadow-inner opacity-30"></div>
@@ -332,21 +381,35 @@ const FluxImageGenerator = () => {
                 <div className="flex items-center justify-between mt-4 gap-2">
                   {imageUrl && (
                     <>
+                 
                       <Button
-                        onClick={downloadImage}
+                        onClick={handleRemoveBg}
                         variant="outline"
                         size="sm"
                         className="rounded-xl hover:scale-105 transition-transform"
                       >
-                        <Download className="w-4 h-4" />
-                        Download
+                        {isRemoving ? (
+                          <div className="flex items-center gap-1">
+                            <span className="animate-spin">
+                              <Loader2Icon className="w-4 h-4" />
+                            </span>
+                            <span>Removing...</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <span>
+                              <Download className="w-4 h-4" />
+                            </span>
+                            <span>Remove bg</span>
+                          </div>
+                        )}
                       </Button>
 
-                      <Button 
+                      <Button
                         onClick={handleAddToDatabaseAndCanvas}
                         disabled={isProcessing}
                         variant="outline"
-                        size="sm" 
+                        size="sm"
                         className={`rounded-xl hover:scale-105 transition-transform ${
                           isProcessing ? "opacity-50 cursor-not-allowed" : ""
                         }`}
@@ -409,7 +472,8 @@ const FluxImageGenerator = () => {
               <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                 <Sparkles className="w-4 h-4" />
                 <span className="font-medium text-sm">
-                  Selected: {selectedSize.name} ({selectedSize.width}×{selectedSize.height})
+                  Selected: {selectedSize.name} ({selectedSize.width}×
+                  {selectedSize.height})
                 </span>
               </div>
             </div>

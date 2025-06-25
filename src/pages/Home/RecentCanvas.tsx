@@ -19,19 +19,23 @@ import EmptyState from "@/components/common/EmptyState";
 import ErrorState from "@/components/common/ErrorState";
 import Heading from "@/components/common/Heading";
 import { useNavigate } from "react-router";
-import { useState } from "react";
+import { use, useState } from "react";
 import { toast } from "sonner";
+import { AuthContext } from "@/contexts-providers/auth-context";
 
 const RecentCanvas = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient() as any;
+  const {user} = use(AuthContext) as any
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState(null) as any;
+
+  
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['recent-templates'],
     queryFn: async () => {
-      const response = await api.get('/template/user/1?page=1&limit=5');
+      const response = await api.get(`/template/user/${user.id}?page=1&limit=5`);
       return response.data;
     },
   });
@@ -73,18 +77,22 @@ const RecentCanvas = () => {
   };
 
   if(isLoading) return <CanvasListSkleton/>
+
+
+
   if(error)  return <div className="py-10">
     <Heading Icon={MdOutlineTimelapse} title={'Recent Canvas'} subtitle={'Continue where you left off'}/>
     <ErrorState/>
   </div>
-  if((templates.length === 0)) <div className="py-10">
+
+  if((templates.length === 0)) return <div className="py-10">
     <Heading Icon={MdOutlineTimelapse} title={'Recent Canvas'} subtitle={'Continue where you left off'}/>
     <EmptyState/>
   </div>
 
   return (
     <>
-      <section className="py-10">
+      <section className="pt-3">
         <Heading Icon={MdOutlineTimelapse} title={'Recent Canvas'} subtitle={'Continue where you left off'}/>
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {

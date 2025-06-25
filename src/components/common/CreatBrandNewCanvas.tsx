@@ -178,7 +178,7 @@ const CreateBrandNewCanvas = () => {
 
   const handleOpenModal = () => {
     if (!user) {
-      return <Navigate state={{ from: location.pathname }} to="/auth/login" />;
+      return navigate('/auth/login')
     }
     setIsModalOpen(true);
   };
