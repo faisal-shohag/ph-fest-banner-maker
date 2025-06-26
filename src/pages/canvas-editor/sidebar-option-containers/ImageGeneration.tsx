@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useCanvas } from "@/hooks/use-canvas";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import api from "@/lib/api";
-import { imageKit } from "@/lib/constants";
+import { getAspectRatio, imageKit } from "@/lib/constants";
 import { GoogleGenAI, Modality } from '@google/genai'
 import {
   Sparkles,
@@ -227,11 +227,12 @@ const FluxImageGenerator = () => {
     setImageUrl(null);
 
     console.log(import.meta.env.VITE_GEMINI_API_KEY)
-
+        const aspect = getAspectRatio(selectedSize.width, selectedSize.height)
+        console.log(aspect)
     try {
      const result:any = await genAI.models.generateContent({
       model: "gemini-2.0-flash-preview-image-generation",
-      contents: prompt,
+      contents: prompt +` (${aspect} aspect ratio)`,
       config: {
         responseModalities: [Modality.TEXT, Modality.IMAGE],
       },

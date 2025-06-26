@@ -311,3 +311,15 @@ export const canvasPresets = {
     icon: FaDesktop,
   },
 };
+
+export function getAspectRatio(width, height) {
+  function gcd(a, b) {
+    return b === 0 ? a : gcd(b, a % b);
+  }
+
+  const divisor = gcd(width, height);
+  const ratioWidth = width / divisor;
+  const ratioHeight = height / divisor;
+
+  return `${ratioWidth}:${ratioHeight}`;
+}
