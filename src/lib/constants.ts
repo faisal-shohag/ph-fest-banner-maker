@@ -7,7 +7,8 @@ import {
   AlignRightIcon,
 } from "lucide-react";
 import { FaFileAlt, FaPalette } from "react-icons/fa";
-import { FaDesktop, FaInstagram, FaRegImage } from "react-icons/fa6";
+import { FaDesktop, FaRegImage } from "react-icons/fa6";
+import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
 
 export const fontFamily = [
   { title: "Aladin", family: '"Aladin", cursive', sample: "AaBbzZ" },
@@ -260,12 +261,12 @@ export const isSVGString = (svg) => {
 };
 
 export const canvasPresets = {
-  instagramPost: {
-    name: "Instagram Post",
+  reels: {
+    name: "Reels",
     width: 1080,
-    height: 1080,
-    description: "Perfect square format for Instagram posts",
-    icon: FaInstagram,
+    height: 1920,
+    description: "Perfect square format for Reels",
+    icon: HiOutlineDevicePhoneMobile,
   },
   twitterPost: { width: 1200, height: 675 },
   normal: {

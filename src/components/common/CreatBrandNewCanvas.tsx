@@ -11,13 +11,13 @@ import { AuthContext } from "@/contexts-providers/auth-context";
 import { newCanvas } from "@/lib/constants";
 import { 
   FaWandMagicSparkles, 
-  FaInstagram, 
   FaRegImage, 
   FaDesktop,
   FaPalette
 } from "react-icons/fa6";
 import { Loader2, Sparkles } from "lucide-react";
 import { FaFileAlt } from "react-icons/fa";
+import { HiOutlineDevicePhoneMobile } from "react-icons/hi2";
 
 interface CreateTemplatePayload {
   title: string;
@@ -80,12 +80,12 @@ const canvasPresets: CanvasPreset[] = [
     popular: true
   },
   {
-    key: 'instagramPost',
-    name: 'Instagram Post',
+    key: 'reels',
+    name: 'Reels',
     width: 1080,
-    height: 1080,
-    description: 'Perfect square format for Instagram posts',
-    icon: FaInstagram,
+    height: 1920,
+    description: 'Perfect square format for Reels',
+    icon: HiOutlineDevicePhoneMobile,
     category: 'social',
     popular: true
   },
@@ -95,7 +95,7 @@ const canvasPresets: CanvasPreset[] = [
   //   width: 1200,
   //   height: 675,
   //   description: 'Optimized for Twitter posts and headers',
-  //   icon: FaTwitter,
+  //   icon: BiMobile,
   //   category: 'social'
   // },
   {

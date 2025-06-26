@@ -8,7 +8,8 @@ import { ThemeToggle } from "@/components/ui/toggle-theme";
 import { RiHomeFill } from "react-icons/ri";
 import { HiColorSwatch } from "react-icons/hi";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LogOutIcon } from "lucide-react";
+import { LogOutIcon, MenuIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
 const NavBar = () => {
   const { user, logout } = use(AuthContext) as any;
   const location = useLocation()
@@ -43,11 +44,33 @@ const NavBar = () => {
     <nav className=" mb-5 border-b">
       <div className="line-flex items-center space-x-2 rounded-xl px-4 py-2 flex justify-between">
         <div className="flex items-center gap-2 text-lg font-bold">
-          <img className="h-10" src="/icons/splash.png" alt="logo"/>
+
+            <div className="block md:hidden lg:hidden xl:hidden">
+              <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button size={'icon'} variant={'outline'} className="">
+                        <MenuIcon/>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent>
+                     {
+                      navlinks.map((link, index) =>  <DropdownMenuItem key={index+1233}>
+                        <Link to={link.link}>{link.title}</Link>
+                      </DropdownMenuItem>)
+                     }
+                     
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+         
+            </div>
+
+          <div className="flex items-center gap-2">
+            <img className="h-10" src="/icons/splash.png" alt="logo"/>
           Hero Canvas
+          </div>
         </div>
 
-        <div className="flex gap-5">
+        <div className="lg:flex xl:flex md:flex hidden gap-5">
           {navlinks.map((link, index) => {
             return (
               <div className={`text-muted-foreground font-medium px-5 py-1 rounded-xl text-sm ${link.active && 'g-card'}`} key={index + 1123}>

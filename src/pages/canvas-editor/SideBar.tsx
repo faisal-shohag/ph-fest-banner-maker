@@ -33,7 +33,7 @@ const SideBar = () => {
   };
 
   return (
-    <div className="h-lvh flex">
+    <div className="h-lvh flex fixed z-10">
       <FloatingContainer 
         isOpen={isContainerOpen} 
         activeOption={activeOption}

@@ -84,6 +84,11 @@ const FabCanvas = ({
     const originalHeight = canvasPresets[template.type].height;
     
     // Calculate available space (with some padding for zoom controls and UI)
+    // let wS = 190
+    // let hS = 200
+    // if(originalHeight > 1080) {
+       
+    // }
     const availableWidth = containerRect.width - 190; // 50px padding on each side
     const availableHeight = containerRect.height - 200; // Space for zoom controls and padding
     
@@ -97,6 +102,7 @@ const FabCanvas = ({
     // Calculate display dimensions
     const displayWidth = originalWidth * scale;
     const displayHeight = originalHeight * scale;
+
     
     setCanvasDisplaySize({
       width: displayWidth,
@@ -176,10 +182,11 @@ const FabCanvas = ({
   };
 
 
+
   return (
     <div 
       ref={containerRef}
-      className="w-full flex flex-col justify-center items-center h-full relative"
+      className="w-full flex flex-col justify-center items-center h-full  fixed"
     >
       <ContextMenu>
         <ContextMenuTrigger>
@@ -234,7 +241,7 @@ const FabCanvas = ({
       />
       
       {/* Optional: Display canvas info */}
-      <div className="absolute bottom-4 left-4 text-xs text-gray-500  bg-opacity-75 px-2 py-1 rounded">
+      <div className="absolute bottom-4 left-20 text-xs text-gray-500  bg-opacity-75 px-2 py-1 rounded">
         {canvasPresets[template.type].width} × {canvasPresets[template.type].height} 
         {canvasDisplaySize.scale < 1 && ` (${Math.round(canvasDisplaySize.scale * 100)}%)`}
       </div>

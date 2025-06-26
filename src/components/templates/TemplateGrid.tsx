@@ -10,7 +10,7 @@ const TemplateCard = ({ template, onClick }) => {
   return (
     <div 
       onClick={() => onClick(template)}  
-      className="bg-gradient-to-br rounded-lg from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] shadow-md"
+      className="bg-gradient-to-br rounded-lg from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] shadow-md item"
     >
       {template.photoURL ? (
         <img
@@ -56,18 +56,12 @@ const TemplateGrid = ({ templates }) => {
     setSelectedTemplate(null);
   };
 
-  // Split templates into columns (2 columns for mobile, 4 for md+)
-  const columns:any = [[], [], [], []]; // Initialize 4 columns
-  templates.forEach((template, index) => {
-    columns[index % 4].push(template); // Distribute templates across columns
-  });
 
   return (
-    <div className="w-full p-4">
-      <div className="relative mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
-        {columns.map((column, colIndex) => (
-          <div key={colIndex} className="grid gap-4">
-            {column.map((template) => (
+    <div className="w-full">
+      <div className=" mx-auto masonry">
+ 
+            {templates.map((template) => (
               <div key={template.id}>
                 <TemplateCard 
                   template={template} 
@@ -75,8 +69,7 @@ const TemplateGrid = ({ templates }) => {
                 />
               </div>
             ))}
-          </div>
-        ))}
+    
       </div>
 
       <TemplateModal

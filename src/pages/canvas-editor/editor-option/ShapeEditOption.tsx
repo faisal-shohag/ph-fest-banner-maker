@@ -262,7 +262,7 @@ const angle = parseFloat(value) || 0;
   return (
     <div>
       <dialog
-        className="z-[9] bg-transparent animate__animated animate__fadeInDown animate__faster dark:text-white p-3 w-full rounded-xl top-10"
+        className="z-[9] fixed bg-transparent animate__animated animate__fadeInDown animate__faster dark:text-white p-3 w-full rounded-xl top-10"
         open={openShapeOptions}
       >
         <div className="dark:bg-zinc-800 max-w-xs mx-auto rounded-xl px-1 border py-1 flex gap-7 justify-center shadow-2xl bg-white items-center flex-wrap">
