@@ -7,6 +7,7 @@ import { useCanvas } from "@/hooks/use-canvas";
 import { AuthContext } from "@/contexts-providers/auth-context";
 import api from "@/lib/api";
 import { imageKit } from "@/lib/constants";
+import { GoogleGenAI, Modality } from '@google/genai'
 import {
   Sparkles,
   Download,
@@ -18,6 +19,8 @@ import {
 } from "lucide-react";
 import { BiImageAdd } from "react-icons/bi";
 import toast from "react-hot-toast";
+const genAI = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+
 
 const FluxImageGenerator = () => {
   const [prompt, setPrompt] = useState(
@@ -164,26 +167,87 @@ const FluxImageGenerator = () => {
     }
   };
 
-  const handleGenerate = async () => {
+  // const handleGenerate = async () => {
+  //   setLoading(true);
+  //   setImageUrl(null);
+
+  //   try {
+  //     const client = await Client.connect("gokaygokay/Chroma");
+  //     const result = await client.predict("/generate_image", {
+  //       prompt,
+  //       seed: 4,
+  //       negative_prompt: 'low quality, ugly, unfinished, out of focus, deformed, disfigure, blurry, smudged, restricted palette, flat colors',
+  //       // randomize_seed: true,
+  //       width: selectedSize.width,
+  //       height: selectedSize.height,
+  //       steps: 26,
+  //       cfg: 4,
+  //     });
+
+  //     if (result.data && result.data[0]) {
+  //       setImageUrl(result.data[0].url);
+  //     }
+  //   } catch (error:any) {
+  //     toast.error(error.message)
+  //     console.error("Error generating image:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  //   const handleGenerate = async () => {
+  //   setLoading(true);
+  //   setImageUrl(null);
+
+  //   try {
+  //     const client = await Client.connect("black-forest-labs/FLUX.1-dev");
+  //     const result = await client.predict("/infer", {
+  //       prompt,
+  //       seed: 0,
+  //       randomize_seed: true,
+  //       width: selectedSize.width,
+  //       height: selectedSize.height,
+  //       guidance_scale: 7.5,
+  //       num_inference_steps: 25,
+  //     });
+
+  //     if (result.data && result.data[0]) {
+  //       setImageUrl(result.data[0].url);
+  //     }
+  //   } catch (error:any) {
+  //     toast.error(error.message)
+  //     console.error("Error generating image:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+      const handleGenerate = async () => {
     setLoading(true);
     setImageUrl(null);
 
-    try {
-      const client = await Client.connect("gokaygokay/Chroma");
-      const result = await client.predict("/generate_image", {
-        prompt,
-        seed: 4,
-        negative_prompt: 'low quality, ugly, unfinished, out of focus, deformed, disfigure, blurry, smudged, restricted palette, flat colors',
-        // randomize_seed: true,
-        width: selectedSize.width,
-        height: selectedSize.height,
-        steps: 26,
-        cfg: 4,
-      });
+    console.log(import.meta.env.VITE_GEMINI_API_KEY)
 
-      if (result.data && result.data[0]) {
-        setImageUrl(result.data[0].url);
-      }
+    try {
+     const result:any = await genAI.models.generateContent({
+      model: "gemini-2.0-flash-preview-image-generation",
+      contents: prompt,
+      config: {
+        responseModalities: [Modality.TEXT, Modality.IMAGE],
+      },
+    });
+
+    const parts = result.candidates[0].content.parts;
+    const imagePart = parts.find((part) => part.inlineData);
+
+    if (!imagePart){ toast.error('image-generation error'); return}
+
+    const dataimage:any = `data:image/png;base64,${imagePart.inlineData.data}` ;
+    
+
+
+        setImageUrl(dataimage);
+
     } catch (error:any) {
       toast.error(error.message)
       console.error("Error generating image:", error);
@@ -191,6 +255,7 @@ const FluxImageGenerator = () => {
       setLoading(false);
     }
   };
+
 
   const downloadImage = () => {
     if (imageUrl) {
