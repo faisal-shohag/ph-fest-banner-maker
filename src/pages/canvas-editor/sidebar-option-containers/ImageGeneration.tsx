@@ -228,7 +228,6 @@ const FluxImageGenerator = () => {
 
     console.log(import.meta.env.VITE_GEMINI_API_KEY)
         const aspect = getAspectRatio(selectedSize.width, selectedSize.height)
-        console.log(aspect)
     try {
      const result:any = await genAI.models.generateContent({
       model: "gemini-2.0-flash-preview-image-generation",
