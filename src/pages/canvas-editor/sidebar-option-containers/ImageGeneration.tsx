@@ -17,6 +17,7 @@ import {
   Loader2Icon,
 } from "lucide-react";
 import { BiImageAdd } from "react-icons/bi";
+import toast from "react-hot-toast";
 
 const FluxImageGenerator = () => {
   const [prompt, setPrompt] = useState(
@@ -168,21 +169,23 @@ const FluxImageGenerator = () => {
     setImageUrl(null);
 
     try {
-      const client = await Client.connect("black-forest-labs/FLUX.1-dev");
-      const result = await client.predict("/infer", {
+      const client = await Client.connect("gokaygokay/Chroma");
+      const result = await client.predict("/generate_image", {
         prompt,
-        seed: 0,
-        randomize_seed: true,
+        seed: 4,
+        negative_prompt: 'low quality, ugly, unfinished, out of focus, deformed, disfigure, blurry, smudged, restricted palette, flat colors',
+        // randomize_seed: true,
         width: selectedSize.width,
         height: selectedSize.height,
-        guidance_scale: 7.5,
-        num_inference_steps: 25,
+        steps: 26,
+        cfg: 4,
       });
 
       if (result.data && result.data[0]) {
         setImageUrl(result.data[0].url);
       }
-    } catch (error) {
+    } catch (error:any) {
+      toast.error(error.message)
       console.error("Error generating image:", error);
     } finally {
       setLoading(false);
@@ -200,10 +203,12 @@ const FluxImageGenerator = () => {
   };
 
   const handleAddToDatabaseAndCanvas = async () => {
+    setIsUploading(true)
     if (!imageUrl || !user?.id) {
       setUploadStatus(
         "Please ensure you're logged in and have an image generated"
       );
+         setIsUploading(false)
       setTimeout(() => setUploadStatus(""), 3000);
       return;
     }
@@ -219,6 +224,7 @@ const FluxImageGenerator = () => {
       // Upload to ImageKit and save to database
       await uploadToImageKit(blob, fileName);
     } catch (error) {
+         setIsUploading(false)
       console.error("Error adding image to database:", error);
       setUploadStatus("Failed to add image to database");
       setTimeout(() => setUploadStatus(""), 3000);
