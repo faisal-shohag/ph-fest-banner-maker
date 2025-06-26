@@ -82,13 +82,11 @@ export const CanvasContextMenu = ({ onResetZoom }: CanvasContextMenuProps) => {
       <ContextMenuItem onClick={copy}>
         <Copy className="w-4 h-4 mr-2" />
         Copy
-        <ContextMenuShortcut>Ctrl+C</ContextMenuShortcut>
       </ContextMenuItem>
       
       <ContextMenuItem onClick={paste}>
         <Clipboard className="w-4 h-4 mr-2" />
         Paste
-        <ContextMenuShortcut>Ctrl+V</ContextMenuShortcut>
       </ContextMenuItem>
       
       <ContextMenuItem onClick={duplicate}>
