@@ -19,6 +19,7 @@ import {
 import { useCanvas } from "@/hooks/use-canvas";
 import CreateNewCanvas from "@/components/common/CreateNewCanvas";
 import SidebarGallerView from "@/components/skeletons/SidebarGallerView";
+import { canvasPresets } from "@/lib/constants";
 
 const fetchTemplates = async ({ pageParam = 1, queryKey }) => {
   const [, search] = queryKey;
@@ -33,33 +34,62 @@ const fetchTemplates = async ({ pageParam = 1, queryKey }) => {
 };
 
 const TemplateCard = ({ template, handleDialogOpen }) => {
+  const height = canvasPresets[template.type].height;
+  const width = canvasPresets[template.type].width;
+  
   return (
-    <div className="">
-      <div onClick={()=>handleDialogOpen(template)} className="bg-gradient-to-br rounded-lg from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden">
+    <div>
+      <div 
+        onClick={() => handleDialogOpen(template)} 
+        className="bg-gradient-to-br rounded-lg from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] shadow-md"
+      >
         {template.photoURL ? (
           <img
             src={template.photoURL}
             alt={template.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+            className="w-full h-auto max-w-full rounded-lg object-cover group-hover:scale-105 transition-transform duration-200"
+            style={{ aspectRatio: `${width}/${height}` }}
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
+          <div 
+            className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"
+            style={{ aspectRatio: `${width}/${height}` }}
+          >
             <MdWidgets size={32} className="text-gray-400 dark:text-gray-600" />
           </div>
         )}
-         <span className="text-xs text-muted-foreground absolute bottom-0 left-1"> by {template.user.displayName}</span>
+        <div className="absolute z-10 inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent  group-hover:opacity-100 transition-opacity duration-200 pointer-events-none rounded-lg" />
+      
+      <div className="absolute z-10 bottom-0 left-0 right-0 p-3 text-white opacity-80 line-clamp-1 transition-opacity duration-200">
+        <p className="font-medium truncate text-xs">{template.title || 'Untitled'}</p>
       </div>
-     
+      </div>
     </div>
   );
 };
 
 const TemplateGrid = ({ templates, handleDialogOpen }) => {
+  // Split templates into two columns
+  const columns:any = [[], []]; // Initialize 2 columns
+  templates.forEach((template, index) => {
+    columns[index % 2].push(template); // Distribute templates across two columns
+  });
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-4">
-      {templates.map((template) => (
-        <TemplateCard handleDialogOpen={handleDialogOpen} key={template.id} template={template} />
-      ))}
+    <div className="w-full p-4">
+      <div className="relative mx-auto grid grid-cols-2 gap-4">
+        {columns.map((column, colIndex) => (
+          <div key={colIndex} className="grid gap-3">
+            {column.map((template) => (
+              <TemplateCard 
+                key={template.id} 
+                template={template} 
+                handleDialogOpen={handleDialogOpen}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

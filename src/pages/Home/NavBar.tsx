@@ -35,7 +35,7 @@ const NavBar = () => {
   return (
     <nav className=" mb-5 border-b">
       <div className="line-flex items-center space-x-2 rounded-xl px-4 py-2 flex justify-between">
-        <div className="flex items-center gap-2 text-lg font-medium">
+        <div className="flex items-center gap-2 text-lg font-bold">
           <img className="h-10" src="/icons/splash.png" alt="logo"/>
           Hero Canvas
         </div>
