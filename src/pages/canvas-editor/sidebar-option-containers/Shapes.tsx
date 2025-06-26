@@ -68,7 +68,7 @@ const Shapes = ({ userId = 1 }) => {
     queryFn: async ({ pageParam = 1 }) => {
       const params = new URLSearchParams({
         page: pageParam.toString(),
-        limit: "12",
+        limit: "15",
       });
 
       if (searchTerm) params.append("search", searchTerm);
