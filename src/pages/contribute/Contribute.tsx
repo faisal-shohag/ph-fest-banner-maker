@@ -10,7 +10,7 @@ const Contribute = () => {
           src="https://cdn-icons-png.flaticon.com/512/15563/15563383.png"
         />
       </div>
-      <div className="text-xl">Contribution will be open soon!</div>
+      <div className="text-xl">Contributions will be open soon!</div>
     </div>
   );
 };
