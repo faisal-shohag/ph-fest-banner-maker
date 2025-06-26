@@ -1,5 +1,5 @@
 import { useState, use } from "react";
-// import { Client } from "@gradio/client";
+import { Client } from "@gradio/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,7 @@ import {
   Image as ImageIcon,
   Palette,
   Zap,
-  // Loader2Icon,
+  Loader2Icon,
 } from "lucide-react";
 import { BiImageAdd } from "react-icons/bi";
 import toast from "react-hot-toast";
@@ -28,7 +28,7 @@ const FluxImageGenerator = () => {
   );
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
-  // const [isRemoving, setIsRemoving] = useState(false);
+  const [isRemoving, setIsRemoving] = useState(false);
   const [selectedSize, setSelectedSize] = useState({
     name: "Logo", width: 500, height: 500
   });
@@ -296,24 +296,24 @@ const FluxImageGenerator = () => {
     }
   };
 
-  // const handleRemoveBg = async () => {
-  //   setIsRemoving(true);
-  //   const url = await fetch(imageUrl as any);
-  //   const image = await url.blob();
-  //   const client = await Client.connect("not-lain/background-removal");
-  //   try {
-  //     const result = await client.predict("/image", {
-  //       image: image,
-  //     });
-  //     if (result.data && result.data[0]) {
-  //       setImageUrl(result.data[0][0].url);
-  //     }
-  //     setIsRemoving(false);
-  //   } catch (error) {
-  //     setIsRemoving(false);
-  //     console.log(error);
-  //   }
-  // };
+  const handleRemoveBg = async () => {
+    setIsRemoving(true);
+    const url = await fetch(imageUrl as any);
+    const image = await url.blob();
+    const client = await Client.connect("not-lain/background-removal");
+    try {
+      const result = await client.predict("/image", {
+        image: image,
+      });
+      if (result.data && result.data[0]) {
+        setImageUrl(result.data[0][0].url);
+      }
+      setIsRemoving(false);
+    } catch (error) {
+      setIsRemoving(false);
+      console.log(error);
+    }
+  };
 
   const isProcessing = isUploading || saveImageMutation.isPending;
 
@@ -448,11 +448,11 @@ const FluxImageGenerator = () => {
                   </div>
                 )}
 
-                <div className="flex items-center justify-center mt-4 gap-2">
+                <div className="flex items-center justify-between mt-4 gap-2">
                   {imageUrl && (
                     <>
                  
-                      {/* <Button
+                      <Button
                         onClick={handleRemoveBg}
                         variant="outline"
                         size="sm"
@@ -473,7 +473,7 @@ const FluxImageGenerator = () => {
                             <span>Remove bg</span>
                           </div>
                         )}
-                      </Button> */}
+                      </Button>
 
                       <Button
                         onClick={handleAddToDatabaseAndCanvas}
