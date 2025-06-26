@@ -318,7 +318,7 @@ const FluxImageGenerator = () => {
   const isProcessing = isUploading || saveImageMutation.isPending;
 
   return (
-    <div className=" min-w-[300px]  from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900">
+    <div className=" max-w-[300px] relative  from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-blue-900 dark:to-indigo-900">
       <div className="">
         <div className="grid gap-3 ">
           <div className="space-y-3">
@@ -332,7 +332,8 @@ const FluxImageGenerator = () => {
               <Textarea
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className=""
+                
+                className="max-w-[280px]"
                 placeholder="Describe your vision in detail..."
               />
             </div>
