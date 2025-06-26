@@ -303,8 +303,8 @@ const ExportModal = ({ title }) => {
               <Download /> Download
             </Button>
           </div>
-
-          {/* <div className="space-y-2">
+         {/* <Separator className="my-5"/>
+          <div >
             <h4 className="font-medium text-sm leading-none flex items-center gap-1"><Share2 size={15} />Share</h4>
           </div> */}
         </div>

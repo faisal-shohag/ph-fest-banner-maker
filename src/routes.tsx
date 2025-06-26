@@ -8,6 +8,7 @@ import Home from "./pages/Home/Home";
 import Templates from "./pages/Templates/Templates";
 import  Contribute from "./pages/contribute/Contribute";
 import Editor from "./pages/canvas-editor/editor/Editor";
+import MyCanvas from "./pages/my-canvas/MyCanvas";
 
 
 export const router = createBrowserRouter([
@@ -26,6 +27,10 @@ export const router = createBrowserRouter([
       {
         path: "/template/:id",
         element: <div>Template</div>,
+      },
+       {
+        path: "/my-canvas",
+        element: <ProtectedRoute><MyCanvas/></ProtectedRoute>,
       },
 
        {

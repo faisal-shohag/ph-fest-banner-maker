@@ -6,6 +6,7 @@ import { Link, useLocation } from "react-router";
 import { FaHandshakeAngle } from "react-icons/fa6";
 import { ThemeToggle } from "@/components/ui/toggle-theme";
 import { RiHomeFill } from "react-icons/ri";
+import { HiColorSwatch } from "react-icons/hi";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { LogOutIcon } from "lucide-react";
 const NavBar = () => {
@@ -23,6 +24,12 @@ const NavBar = () => {
       icon: <BiSolidWidget />,
       link: "/templates",
       active: location.pathname.includes("/templates")
+    },
+      {
+      title: "My Canvas",
+      icon: <HiColorSwatch />,
+      link: "/my-canvas",
+      active: location.pathname.includes("/my-canvas")
     },
     {
       title: "Contribute",
