@@ -26,9 +26,7 @@ const FluxImageGenerator = () => {
   const [loading, setLoading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
   const [selectedSize, setSelectedSize] = useState({
-    name: "Square",
-    width: 1024,
-    height: 1024,
+    name: "Logo", width: 500, height: 500
   });
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
