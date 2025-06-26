@@ -309,7 +309,8 @@ const FluxImageGenerator = () => {
         setImageUrl(result.data[0][0].url);
       }
       setIsRemoving(false);
-    } catch (error) {
+    } catch (error:any) {
+      toast.error(error.message)
       setIsRemoving(false);
       console.log(error);
     }
