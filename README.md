@@ -1,54 +1,49 @@
-# React + TypeScript + Vite
+![Hero Canvas](https://hero-canvas.vercel.app/icons/splash.png)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Hero Canvas
 
-Currently, two official plugins are available:
+## Frontend
+- **Technologies**: React with TypeScript, Fabric.js
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Backend
+- **Technologies**: Node.js, PostgreSQL (hosted on NHost)
 
-## Expanding the ESLint configuration
+## Implemented Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### General Features
+1. **Canvas Creation**: Users can create canvases in various sizes (e.g., Logo, A4 Portrait, Reels).
+2. **Canvas Storage**: Created canvases are automatically saved to the database, allowing users to view their own canvases.
+3. **Canvas Publishing**: Users can publish their canvases, making them accessible to all users.
+4. **Template Management**: Templates are displayed in a masonry grid view with a search feature for easy discovery.
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+### Editor Features
+1. **Canvas Rendering**: Smooth rendering of canvases in different sizes with comprehensive zoom controls.
+2. **Canvas Customization**: Ability to change canvas background color.
+3. **Element Opacity**: Control opacity for any element on the canvas.
+4. **Context Menu**: Right-click context menu provides:
+   - Undo, Redo
+   - Copy, Paste elements
+   - Duplicate elements
+   - Layer control (Bring Forward, Send Backward)
+   - Reset zoom
+   - Set/Remove Background
+5. **Sidebar Features**:
+   - **Image Uploading**: Users can upload images, stored in the cloud and accessible to all users.
+   - **Textbox**: Add textboxes with editing options, including bold, italic, underline, color, font family, and font size.
+   - **Shapes**: Access a library of SVG shapes and upload custom SVG (string) shapes. Shape options include fill color, stroke color, and stroke width. Shapes can be searched and filtered by category.
+   - **AI Integration**: Utilizes Gemini Flash 2.0 for image generation based on prompts with customizable image ratios. A Hugging Face model removes backgrounds from generated images, which can be added to the canvas or downloaded.
+6. **Export Options**: Export canvases in JPG and PNG formats with selectable quality and resolution.
+7. **Save Functionality**: Save entire canvas as a template in the database. Users can choose to make templates public, adding tags and descriptions for efficient searchability.
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Features to Be Implemented
+1. Image cropping
+2. Image clipping
+3. Image filtering
+4. Text effects: shadow, glow, text background, gradient
+5. Real-time saving to the database to preserve editing state
+6. Multipage canvas support
+7. Export in GIF and PDF formats
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Features to Be Enhanced
+1. Upgrade the image generation model
+2. Host a proprietary machine learning model for background removal

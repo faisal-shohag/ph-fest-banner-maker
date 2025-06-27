@@ -40,7 +40,7 @@ const TemplateModal = ({ template, isOpen, onClose }) => {
             )}
           </div>
 
-          <div className="w-96 bg-white dark:bg-slate-900 flex flex-col">
+          <div className="w-96 flex-1 bg-white dark:bg-slate-900 flex flex-col">
             <DialogHeader className="p-6 pb-4 border-b border-slate-200 dark:border-slate-700">
               <div className="flex items-start justify-between">
                 <div className="flex-1">

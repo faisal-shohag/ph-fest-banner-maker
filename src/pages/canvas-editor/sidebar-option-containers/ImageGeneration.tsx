@@ -29,13 +29,14 @@ const FluxImageGenerator = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+   const { fabCanvas, handleImageFromURL } = useCanvas();
   const [selectedSize, setSelectedSize] = useState({
-    name: "Logo", width: 500, height: 500
+    name: "Canvas", width: fabCanvas?.width, height: fabCanvas?.height
   });
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState("");
 
-  const { fabCanvas, handleImageFromURL } = useCanvas();
+ 
   const { user } = use(AuthContext) as any;
   const queryClient = useQueryClient();
 
@@ -45,7 +46,7 @@ const FluxImageGenerator = () => {
     { name: "Landscape", width: 1024, height: 768, icon: "🖥️" },
     { name: "Logo", width: 500, height: 500, icon: "🔥" },
   ];
-
+ 
   // Add canvas size if available
   const allSizes = fabCanvas
     ? [

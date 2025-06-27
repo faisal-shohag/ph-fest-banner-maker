@@ -228,9 +228,15 @@
 /* The Masonry Container */
 .masonry {
   margin: 1.5em auto;
-  /* max-width: 768px; */
   column-gap: 0.5em;
   row-gap: 0.5em;
+}
+
+.masonry-small {
+  margin: 1.5em auto;
+  column-gap: 0.5em;
+  row-gap: 0.5em;
+  column-count: 2;
 }
 
 /* The Masonry Brick */

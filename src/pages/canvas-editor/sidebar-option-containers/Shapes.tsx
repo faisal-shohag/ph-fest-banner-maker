@@ -130,8 +130,8 @@ const Shapes = ({ userId = 1 }) => {
         loadedSVG.options
       );
       svgGroup.set({
-        scaleY: 0.5,
-        scaleX: 0.5,
+        scaleY: 1,
+        scaleX: 1,
         originX: "center",
         originY: "center",
         fill: 'blue',

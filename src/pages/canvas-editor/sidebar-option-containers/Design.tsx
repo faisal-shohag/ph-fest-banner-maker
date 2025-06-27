@@ -41,7 +41,7 @@ const TemplateCard = ({ template, handleDialogOpen }) => {
     <div>
       <div 
         onClick={() => handleDialogOpen(template)} 
-        className="bg-gradient-to-br rounded-lg from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] shadow-md"
+        className="bg-gradient-to-br rounded-lg from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 relative overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:scale-[1.02] shadow-md item"
       >
         {template.photoURL ? (
           <img
@@ -69,26 +69,18 @@ const TemplateCard = ({ template, handleDialogOpen }) => {
 };
 
 const TemplateGrid = ({ templates, handleDialogOpen }) => {
-  // Split templates into two columns
-  const columns:any = [[], []]; // Initialize 2 columns
-  templates.forEach((template, index) => {
-    columns[index % 2].push(template); // Distribute templates across two columns
-  });
+
 
   return (
     <div className="w-full p-4">
-      <div className="relative mx-auto grid grid-cols-2 gap-4">
-        {columns.map((column, colIndex) => (
-          <div key={colIndex} className="grid gap-3">
-            {column.map((template) => (
+      <div className="relative masonry-small">
+            {templates.map((template) => (
               <TemplateCard 
                 key={template.id} 
                 template={template} 
                 handleDialogOpen={handleDialogOpen}
               />
             ))}
-          </div>
-        ))}
       </div>
     </div>
   );
