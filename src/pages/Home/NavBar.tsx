@@ -8,10 +8,10 @@ import { ThemeToggle } from "@/components/ui/toggle-theme";
 import { RiHomeFill } from "react-icons/ri";
 import { HiColorSwatch } from "react-icons/hi";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { LogOutIcon, MenuIcon } from "lucide-react";
+import { LogInIcon, LogOutIcon, MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 const NavBar = () => {
-  const { user, logout } = use(AuthContext) as any;
+  const { user, logout, loading } = use(AuthContext) as any;
   const location = useLocation()
   const navlinks = [
      {
@@ -84,11 +84,12 @@ const NavBar = () => {
               </div>
             );
           })}
+         
         </div>
 
         <div className="flex items-center gap-3">
           {user ? (
-            <div>
+            <div className="">
                <DropdownMenu>
                     <DropdownMenuTrigger>
                       
@@ -116,6 +117,14 @@ const NavBar = () => {
           ) : null}
 
           <ThemeToggle/>
+
+          {!loading && !user ? (
+            <Link to="/auth/login">
+              <Button variant={"outline"} size={"icon"}>
+                <LogInIcon className="h-4 w-4" />
+              </Button>
+            </Link>
+          ) : null}
         </div>
       </div>
     </nav>
