@@ -4,7 +4,7 @@
 
 
 ## Frontend
-- **Technologies**: React with TypeScript, Fabric.js
+- **Technologies**: React with TypeScript, Fabric.js  
 ![FrontEnd](https://skillicons.dev/icons?i=react,ts&perline=5) <img height="50" src="https://i.postimg.cc/TPBj9PVX/image.png">
 
 ## Backend
