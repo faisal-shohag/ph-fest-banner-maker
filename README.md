@@ -44,6 +44,7 @@
 6. **Export Options**: Export canvases in JPG and PNG formats with selectable quality and resolution.
 
 [![image.png](https://i.postimg.cc/Pf39kWQX/image.png)](https://postimg.cc/WtZXGJyC)
+
 7. **Save Functionality**: Save entire canvas as a template in the database. Users can choose to make templates public, adding tags and descriptions for efficient searchability. 
 
 [![image.png](https://i.postimg.cc/Px63THZ3/image.png)](https://postimg.cc/KkMrDd0B)
